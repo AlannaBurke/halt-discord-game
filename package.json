@@ -1,7 +1,7 @@
 {
-  "name": "rescue-draft",
+  "name": "halt-go",
   "version": "1.0.0",
-  "description": "A simultaneous multiplayer card drafting Discord game with adorable rescue animals — inspired by Sushi Go!",
+  "description": "HALT Go — A simultaneous multiplayer card drafting Discord game with adorable rescue animals, inspired by Sushi Go!",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

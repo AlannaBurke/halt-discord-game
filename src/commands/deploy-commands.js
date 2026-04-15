@@ -4,11 +4,11 @@ require('dotenv').config();
 const commands = [
   new SlashCommandBuilder()
     .setName('game')
-    .setDescription('Start a new Rescue Draft game in this channel'),
+    .setDescription('Start a new HALT Go game in this channel'),
 
   new SlashCommandBuilder()
     .setName('help')
-    .setDescription('Learn how to play Rescue Draft'),
+    .setDescription('Learn how to play HALT Go'),
 
   new SlashCommandBuilder()
     .setName('status')

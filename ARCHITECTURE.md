@@ -8,7 +8,7 @@
 
 ## Project Structure
 ```
-rescue-game/
+halt-discord-game/
 ├── bot/
 │   ├── index.js              # Bot entry point
 │   ├── commands/

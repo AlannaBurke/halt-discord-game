@@ -1,4 +1,4 @@
-# 🐾 Rescue Draft
+# 🐾 HALT Go
 
 A simultaneous multiplayer card drafting Discord game with adorable rescue animals — inspired by [Sushi Go](https://youtu.be/-WO1cP9wzrw)!
 
@@ -41,7 +41,7 @@ Each round has 7 phases with shrinking card selections:
 ### 1. Create a Discord Bot
 
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
-2. Click **New Application** and name it (e.g., "Rescue Draft")
+2. Click **New Application** and name it (e.g., "HALT Go")
 3. Go to the **Bot** tab and click **Reset Token** — copy and save this token
 4. Under **Privileged Gateway Intents**, enable **Message Content Intent**
 5. Go to the **OAuth2** tab, select **bot** and **applications.commands** scopes
@@ -56,8 +56,8 @@ Each round has 7 phases with shrinking card selections:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/rescue-draft.git
-cd rescue-draft
+git clone https://github.com/AlannaBurke/halt-discord-game.git
+cd halt-discord-game
 
 # Install dependencies
 pnpm install
@@ -105,7 +105,7 @@ pnpm start
 ## Project Structure
 
 ```
-rescue-draft/
+halt-discord-game/
 ├── src/
 │   ├── index.js              # Bot entry point
 │   ├── commands/

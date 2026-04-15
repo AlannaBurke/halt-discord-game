@@ -1,4 +1,4 @@
-# Rescue Draft Game — Design Document
+# HALT Go — Design Document
 
 ## Overview
 A simultaneous multiplayer drafting and combo-scoring Discord game inspired by Sushi Go, themed around adorable rescue animals. Players build card collections over synchronized phases, with automatic scoring after each round. 3 rounds total, highest score wins.

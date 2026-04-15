@@ -13,7 +13,7 @@ function createLobbyEmbed(game) {
     .join('\n');
 
   return new EmbedBuilder()
-    .setTitle('🐾 Rescue Draft — Lobby')
+    .setTitle('🐾 HALT Go — Lobby')
     .setDescription(
       `**${Array.from(game.players.values())[0].username}** is hosting a game!\n\n` +
       `Click **Join Game** to play!\n` +
@@ -32,7 +32,7 @@ function createLobbyEmbed(game) {
       }
     )
     .setColor(0xFFB6C1)
-    .setFooter({ text: 'Helping All Little Things • Rescue Draft' })
+    .setFooter({ text: 'Helping All Little Things • HALT Go' })
     .setTimestamp();
 }
 
@@ -48,7 +48,7 @@ function createRoundStartEmbed(round, totalRounds) {
       `Check your DMs for your card choices!`
     )
     .setColor(0x87CEEB)
-    .setFooter({ text: 'Rescue Draft • Cards will appear in your DMs' });
+    .setFooter({ text: 'HALT Go • Cards will appear in your DMs' });
 }
 
 /**
@@ -65,7 +65,7 @@ function createPhaseAnnouncementEmbed(round, phase, totalPhases) {
       `⏱️ You have **${GAME_CONFIG.PHASE_TIMER_SECONDS} seconds** to choose.`
     )
     .setColor(0xFFD700)
-    .setFooter({ text: 'Rescue Draft • Pick a card in your DMs!' });
+    .setFooter({ text: 'HALT Go • Pick a card in your DMs!' });
 }
 
 /**
@@ -222,7 +222,7 @@ function createGameEndEmbed(results) {
       }
     )
     .setColor(0xFFD700)
-    .setFooter({ text: 'Helping All Little Things • Rescue Draft • Thanks for playing!' })
+    .setFooter({ text: Helping All Little Things • HALT Go • Thanks for playing!
     .setTimestamp();
 }
 
@@ -243,9 +243,9 @@ function createWaitingEmbed(waitingPlayers) {
  */
 function createHelpEmbed() {
   return new EmbedBuilder()
-    .setTitle('🐾 Rescue Draft — How to Play')
+    .setTitle('🐾 HALT Go — How to Play')
     .setDescription(
-      `**Rescue Draft** is a simultaneous card drafting game where you collect adorable rescue animals!\n\n` +
+      `**HALT Go** is a simultaneous card drafting game where you collect adorable rescue animals!\n\n` +
       `**Setup:** Use \`/game\` to create a lobby, then others join. Host starts when ready.\n\n` +
       `**Gameplay:** Over 3 rounds of 7 phases each, you'll pick cards from shrinking selections sent to your DMs. All players pick at the same time!`
     )
@@ -297,7 +297,7 @@ function createHelpEmbed() {
       }
     )
     .setColor(0xFFB6C1)
-    .setFooter({ text: 'Helping All Little Things • Rescue Draft' });
+    .setFooter({ text: 'Helping All Little Things • HALT Go' });
 }
 
 module.exports = {
