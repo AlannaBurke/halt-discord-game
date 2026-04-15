@@ -222,7 +222,7 @@ function createGameEndEmbed(results) {
       }
     )
     .setColor(0xFFD700)
-    .setFooter({ text: Helping All Little Things • HALT Go • Thanks for playing!
+    .setFooter({ text: 'Helping All Little Things • HALT Go • Thanks for playing!' })
     .setTimestamp();
 }
 

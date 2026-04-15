@@ -3,6 +3,7 @@ const {
   GatewayIntentBits,
   Partials,
   Events,
+  MessageFlags,
 } = require('discord.js');
 require('dotenv').config();
 
@@ -53,10 +54,24 @@ client.once(Events.ClientReady, (c) => {
 // Slash Command Handler
 // ============================================================
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (interaction.isChatInputCommand()) {
-    await handleSlashCommand(interaction);
-  } else if (interaction.isButton()) {
-    await handleButtonInteraction(interaction);
+  try {
+    if (interaction.isChatInputCommand()) {
+      await handleSlashCommand(interaction);
+    } else if (interaction.isButton()) {
+      await handleButtonInteraction(interaction);
+    }
+  } catch (error) {
+    console.error('Interaction error:', error);
+    try {
+      const reply = { content: '❌ Something went wrong!', flags: MessageFlags.Ephemeral };
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp(reply);
+      } else {
+        await interaction.reply(reply);
+      }
+    } catch (e) {
+      console.error('Failed to send error reply:', e.message);
+    }
   }
 });
 
@@ -74,7 +89,7 @@ async function handleSlashCommand(interaction) {
       await handleStatusCommand(interaction);
       break;
     default:
-      await interaction.reply({ content: 'Unknown command!', ephemeral: true });
+      await interaction.reply({ content: 'Unknown command!', flags: MessageFlags.Ephemeral });
   }
 }
 
@@ -89,13 +104,16 @@ async function handleGameCommand(interaction) {
   const result = gameManager.createGame(channelId, userId, username);
 
   if (!result.success) {
-    return interaction.reply({ content: `❌ ${result.message}`, ephemeral: true });
+    return interaction.reply({ content: `❌ ${result.message}`, flags: MessageFlags.Ephemeral });
   }
 
   const game = result.game;
 
+  // Store the channel ID so event handlers can fetch it fresh
+  game._discordChannelId = channelId;
+
   // Set up game event handlers
-  setupGameEvents(game, interaction.channel);
+  setupGameEvents(game);
 
   // Send lobby embed
   const embed = createLobbyEmbed(game);
@@ -112,7 +130,7 @@ async function handleGameCommand(interaction) {
 // ============================================================
 async function handleHelpCommand(interaction) {
   const embed = createHelpEmbed();
-  await interaction.reply({ embeds: [embed], ephemeral: true });
+  await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 }
 
 // ============================================================
@@ -121,7 +139,7 @@ async function handleHelpCommand(interaction) {
 async function handleStatusCommand(interaction) {
   const game = gameManager.getGame(interaction.channelId);
   if (!game) {
-    return interaction.reply({ content: '❌ No active game in this channel.', ephemeral: true });
+    return interaction.reply({ content: '❌ No active game in this channel.', flags: MessageFlags.Ephemeral });
   }
 
   const status = game.getStatus();
@@ -131,7 +149,7 @@ async function handleStatusCommand(interaction) {
 
   await interaction.reply({
     content: `**Game Status:** ${status.state}\n**Round:** ${status.currentRound} | **Phase:** ${status.currentPhase}\n**Players:**\n${playerList}`,
-    ephemeral: true,
+    flags: MessageFlags.Ephemeral,
   });
 }
 
@@ -161,7 +179,7 @@ async function handleJoinButton(interaction) {
   const result = gameManager.joinGame(channelId, userId, username);
 
   if (!result.success) {
-    return interaction.reply({ content: `❌ ${result.message}`, ephemeral: true });
+    return interaction.reply({ content: `❌ ${result.message}`, flags: MessageFlags.Ephemeral });
   }
 
   // Update the lobby embed
@@ -184,13 +202,13 @@ async function handleStartButton(interaction) {
 
   const game = gameManager.getGame(channelId);
   if (!game) {
-    return interaction.reply({ content: '❌ Game not found!', ephemeral: true });
+    return interaction.reply({ content: '❌ Game not found!', flags: MessageFlags.Ephemeral });
   }
 
   const result = game.startGame(userId);
 
   if (!result.success) {
-    return interaction.reply({ content: `❌ ${result.message}`, ephemeral: true });
+    return interaction.reply({ content: `❌ ${result.message}`, flags: MessageFlags.Ephemeral });
   }
 
   // Disable lobby buttons
@@ -213,23 +231,23 @@ async function handleCardSelectButton(interaction) {
   const game = gameManager.getGame(channelId);
 
   if (!game) {
-    return interaction.reply({ content: '❌ Game not found!', ephemeral: true });
+    return interaction.reply({ content: '❌ Game not found!', flags: MessageFlags.Ephemeral });
   }
 
   // Verify phase matches
   if (game.currentPhase !== phase) {
-    return interaction.reply({ content: '❌ This phase has already ended!', ephemeral: true });
+    return interaction.reply({ content: '❌ This phase has already ended!', flags: MessageFlags.Ephemeral });
   }
 
   const player = game.players.get(userId);
   if (!player) {
-    return interaction.reply({ content: '❌ You are not in this game!', ephemeral: true });
+    return interaction.reply({ content: '❌ You are not in this game!', flags: MessageFlags.Ephemeral });
   }
 
   const result = game.selectCard(userId, cardIndex);
 
   if (!result.success) {
-    return interaction.reply({ content: `❌ ${result.message}`, ephemeral: true });
+    return interaction.reply({ content: `❌ ${result.message}`, flags: MessageFlags.Ephemeral });
   }
 
   // Update the DM with selected card and disabled buttons
@@ -262,100 +280,159 @@ async function handleCardSelectButton(interaction) {
 }
 
 // ============================================================
+// Helper: Get a channel by ID with proper permissions
+// ============================================================
+async function getChannel(channelId) {
+  try {
+    return await client.channels.fetch(channelId);
+  } catch (error) {
+    console.error(`Failed to fetch channel ${channelId}:`, error.message);
+    return null;
+  }
+}
+
+// ============================================================
 // Game Event Handlers
 // ============================================================
-function setupGameEvents(game, channel) {
+function setupGameEvents(game) {
   // Round Start
   game.on('roundStart', async ({ round, totalRounds }) => {
-    const embed = createRoundStartEmbed(round, totalRounds);
-    await channel.send({ embeds: [embed] });
+    try {
+      const channel = await getChannel(game._discordChannelId);
+      if (!channel) return;
+      const embed = createRoundStartEmbed(round, totalRounds);
+      await channel.send({ embeds: [embed] });
+    } catch (error) {
+      console.error('Error in roundStart handler:', error.message);
+    }
   });
 
   // Phase Start — send DMs to all players
   game.on('phaseStart', async ({ round, phase, totalPhases }) => {
-    // Announce in channel
-    const channelEmbed = createPhaseAnnouncementEmbed(round, phase, totalPhases);
-    await channel.send({ embeds: [channelEmbed] });
+    try {
+      const channel = await getChannel(game._discordChannelId);
+      if (!channel) return;
 
-    // Send DMs to each player
-    for (const player of game.players.values()) {
-      try {
-        // Get or create DM channel
-        const user = await client.users.fetch(player.userId);
-        if (!player.dmChannel) {
-          player.dmChannel = await user.createDM();
+      // Announce in channel
+      const channelEmbed = createPhaseAnnouncementEmbed(round, phase, totalPhases);
+      await channel.send({ embeds: [channelEmbed] });
+
+      // Send DMs to each player
+      for (const player of game.players.values()) {
+        try {
+          // Get or create DM channel
+          const user = await client.users.fetch(player.userId);
+          if (!player.dmChannel) {
+            player.dmChannel = await user.createDM();
+          }
+
+          const embed = createCardSelectionEmbed(player, round, phase);
+          const buttons = createCardSelectionButtons(
+            player.currentChoices,
+            game.channelId,
+            phase
+          );
+
+          await player.dmChannel.send({
+            embeds: [embed],
+            components: buttons,
+          });
+        } catch (error) {
+          console.error(`Failed to DM ${player.username}:`, error.message);
+          // Notify in channel
+          try {
+            await channel.send({
+              content: `⚠️ Could not DM **${player.username}**! Please make sure your DMs are open.`,
+            });
+          } catch (e) {
+            console.error('Failed to send DM warning:', e.message);
+          }
         }
-
-        const embed = createCardSelectionEmbed(player, round, phase);
-        const buttons = createCardSelectionButtons(
-          player.currentChoices,
-          game.channelId,
-          phase
-        );
-
-        await player.dmChannel.send({
-          embeds: [embed],
-          components: buttons,
-        });
-      } catch (error) {
-        console.error(`Failed to DM ${player.username}:`, error.message);
-        // Notify in channel
-        await channel.send({
-          content: `⚠️ Could not DM **${player.username}**! Please make sure your DMs are open.`,
-        });
       }
+    } catch (error) {
+      console.error('Error in phaseStart handler:', error.message);
     }
   });
 
   // Player Selected — update channel with progress
   game.on('playerSelected', async ({ userId, username, phase }) => {
-    const waiting = game.getWaitingPlayers();
-    if (waiting.length > 0) {
-      // Don't spam — only update periodically
-      // Could add a debounce here if needed
-    }
+    // Intentionally quiet — no channel spam
   });
 
   // Player Auto-Selected (timer expired)
   game.on('playerAutoSelected', async ({ userId, username }) => {
-    await channel.send({
-      content: `⏱️ **${username}** ran out of time — a card was randomly selected!`,
-    });
+    try {
+      const channel = await getChannel(game._discordChannelId);
+      if (!channel) return;
+      await channel.send({
+        content: `⏱️ **${username}** ran out of time — a card was randomly selected!`,
+      });
+    } catch (error) {
+      console.error('Error in playerAutoSelected handler:', error.message);
+    }
   });
 
   // Pregnant Hamster resolved
   game.on('pregnantHamsterResolved', async ({ userId, username, newCards }) => {
-    // The DM update is handled in the button interaction
-    // Just announce in channel
-    await channel.send({
-      content: `🤰 **${username}** played a Pregnant Hamster and received 2 new cards!`,
-    });
+    try {
+      const channel = await getChannel(game._discordChannelId);
+      if (!channel) return;
+      await channel.send({
+        content: `🤰 **${username}** played a Pregnant Hamster and received 2 new cards!`,
+      });
+    } catch (error) {
+      console.error('Error in pregnantHamsterResolved handler:', error.message);
+    }
   });
 
   // Phase End
   game.on('phaseEnd', async ({ round, phase }) => {
-    await channel.send({
-      content: `✅ Phase ${phase} complete! All players have selected.`,
-    });
+    try {
+      const channel = await getChannel(game._discordChannelId);
+      if (!channel) return;
+      await channel.send({
+        content: `✅ Phase ${phase} complete! All players have selected.`,
+      });
+    } catch (error) {
+      console.error('Error in phaseEnd handler:', error.message);
+    }
   });
 
   // Round End — show scores
   game.on('roundEnd', async ({ round, results }) => {
-    const embed = createRoundScoreEmbed(round, results);
-    await channel.send({ embeds: [embed] });
+    try {
+      const channel = await getChannel(game._discordChannelId);
+      if (!channel) return;
+      const embed = createRoundScoreEmbed(round, results);
+      await channel.send({ embeds: [embed] });
+    } catch (error) {
+      console.error('Error in roundEnd handler:', error.message);
+    }
   });
 
   // Game End — show final results
   game.on('gameEnd', async ({ results }) => {
-    const embed = createGameEndEmbed(results);
-    await channel.send({ embeds: [embed] });
+    try {
+      const channel = await getChannel(game._discordChannelId);
+      if (!channel) return;
+      const embed = createGameEndEmbed(results);
+      await channel.send({ embeds: [embed] });
+    } catch (error) {
+      console.error('Error in gameEnd handler:', error.message);
+    }
   });
 
   // Lobby Timeout
   game.on('lobbyTimeout', async () => {
-    await channel.send({
-      content: '⏱️ Game lobby timed out! Use `/game` to start a new one.',
-    });
+    try {
+      const channel = await getChannel(game._discordChannelId);
+      if (!channel) return;
+      await channel.send({
+        content: '⏱️ Game lobby timed out! Use `/game` to start a new one.',
+      });
+    } catch (error) {
+      console.error('Error in lobbyTimeout handler:', error.message);
+    }
   });
 }
 
