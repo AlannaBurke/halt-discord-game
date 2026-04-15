@@ -1,0 +1,19 @@
+{
+  "name": "rescue-draft",
+  "version": "1.0.0",
+  "description": "A simultaneous multiplayer card drafting Discord game with adorable rescue animals — inspired by Sushi Go!",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "deploy": "node src/commands/deploy-commands.js",
+    "test": "node test/test-engine.js"
+  },
+  "keywords": ["discord", "game", "card-game", "sushi-go", "rescue", "animals"],
+  "author": "Helping All Little Things",
+  "license": "MIT",
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "discord.js": "^14.26.3",
+    "dotenv": "^17.4.2"
+  }
+}
