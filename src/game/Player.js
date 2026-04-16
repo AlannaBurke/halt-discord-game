@@ -19,6 +19,9 @@ class Player {
     // Score breakdown per round for display
     this.roundScores = [];
 
+    // All cards collected across ALL rounds (for collectible gallery)
+    this.allCards = [];
+
     // Current phase selection state
     this.currentChoices = [];    // Cards offered this phase
     this.hasSelected = false;    // Whether player has picked this phase
@@ -121,6 +124,8 @@ class Player {
     this.roundScores.push({ score, breakdown });
     // Track sanctuary cats across rounds
     this.sanctuaryCats += this.countCard('sanctuary_cat');
+    // Save all cards for collectible gallery
+    this.allCards.push(...this.roundCards);
     // Clear round cards
     this.roundCards = [];
   }

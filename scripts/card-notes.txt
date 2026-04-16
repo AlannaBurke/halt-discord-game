@@ -1,0 +1,13 @@
+Card images generated successfully:
+- Individual cards: 240x340px each, in assets/cards/discord/
+- Sample hand composite: 7 cards side by side with slight overlap
+- Each card has: colored header with name, white body with kawaii art, colored footer with scoring rules, HALT Go branding
+- Cards look great at Discord embed sizes
+- The arrow characters in scoring text render as boxes (→) - using DejaVu font which supports them
+- Hand composite works well for end-of-game collectible display
+
+Next: Need to create a Node.js module that uses canvas/sharp to generate composites at runtime,
+OR pre-generate and attach the individual card images in Discord embeds.
+
+Approach: Use individual card images as attachments in Discord messages. For the hand/collection view,
+generate composites using a Node canvas library (canvas or @napi-rs/canvas).

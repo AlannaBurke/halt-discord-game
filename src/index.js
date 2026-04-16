@@ -4,6 +4,7 @@ const {
   Partials,
   Events,
   MessageFlags,
+  AttachmentBuilder,
 } = require('discord.js');
 require('dotenv').config();
 
@@ -26,6 +27,11 @@ const {
   createCardSelectionButtons,
   createDisabledCardButtons,
 } = require('./ui/buttons');
+const {
+  generateSelectionImage,
+  generateCollectibleGallery,
+  cleanupTempFiles,
+} = require('./ui/cardRenderer');
 
 // Create Discord client
 const client = new Client({
@@ -267,8 +273,6 @@ async function handleCardSelectButton(interaction) {
   // If Pregnant Hamster was selected, also show the resolution
   const embeds = [selectedEmbed];
   if (result.card === CARD_TYPES.PREGNANT_HAMSTER) {
-    // The new cards were already added by the game engine
-    // Find the last 2 cards added (they're the pregnancy result)
     const lastTwo = player.roundCards.slice(-2);
     embeds.push(createPregnantHamsterEmbed(lastTwo));
   }
@@ -307,7 +311,7 @@ function setupGameEvents(game) {
     }
   });
 
-  // Phase Start — send DMs to all players
+  // Phase Start — send DMs with card images to all players
   game.on('phaseStart', async ({ round, phase, totalPhases }) => {
     try {
       const channel = await getChannel(game._discordChannelId);
@@ -317,7 +321,7 @@ function setupGameEvents(game) {
       const channelEmbed = createPhaseAnnouncementEmbed(round, phase, totalPhases);
       await channel.send({ embeds: [channelEmbed] });
 
-      // Send DMs to each player
+      // Send DMs to each player with card images
       for (const player of game.players.values()) {
         try {
           // Get or create DM channel
@@ -326,6 +330,13 @@ function setupGameEvents(game) {
             player.dmChannel = await user.createDM();
           }
 
+          // Generate the card selection image
+          const selectionFilename = `sel_${game.channelId}_${player.userId}_r${round}_p${phase}.png`;
+          const selectionImagePath = await generateSelectionImage(
+            player.currentChoices,
+            selectionFilename
+          );
+
           const embed = createCardSelectionEmbed(player, round, phase);
           const buttons = createCardSelectionButtons(
             player.currentChoices,
@@ -333,13 +344,22 @@ function setupGameEvents(game) {
             phase
           );
 
-          await player.dmChannel.send({
+          // Build message with card image
+          const messagePayload = {
             embeds: [embed],
             components: buttons,
-          });
+          };
+
+          // Attach the card image if generated successfully
+          if (selectionImagePath) {
+            const attachment = new AttachmentBuilder(selectionImagePath, { name: 'cards.png' });
+            embed.setImage('attachment://cards.png');
+            messagePayload.files = [attachment];
+          }
+
+          await player.dmChannel.send(messagePayload);
         } catch (error) {
           console.error(`Failed to DM ${player.username}:`, error.message);
-          // Notify in channel
           try {
             await channel.send({
               content: `⚠️ Could not DM **${player.username}**! Please make sure your DMs are open.`,
@@ -410,13 +430,63 @@ function setupGameEvents(game) {
     }
   });
 
-  // Game End — show final results
+  // Game End — show final results + collectible galleries
   game.on('gameEnd', async ({ results }) => {
     try {
       const channel = await getChannel(game._discordChannelId);
       if (!channel) return;
+
+      // Send the main results embed
       const embed = createGameEndEmbed(results);
       await channel.send({ embeds: [embed] });
+
+      // Generate and send collectible galleries for each player
+      for (const playerResult of results) {
+        try {
+          const player = game.players.get(playerResult.userId);
+          if (!player) continue;
+
+          const galleryFilename = `gallery_${game.channelId}_${player.userId}.png`;
+          const galleryPath = await generateCollectibleGallery(
+            player.username,
+            player.allCards,
+            playerResult.totalScore,
+            galleryFilename
+          );
+
+          if (galleryPath) {
+            const attachment = new AttachmentBuilder(galleryPath, { name: `${player.username}_collection.png` });
+
+            // Send to channel
+            await channel.send({
+              content: `🎴 **${player.username}'s Card Collection** — ${player.allCards.length} cards collected!`,
+              files: [attachment],
+            });
+
+            // Also DM the player their collection
+            try {
+              const user = await client.users.fetch(player.userId);
+              const dmChannel = player.dmChannel || await user.createDM();
+              const dmAttachment = new AttachmentBuilder(galleryPath, { name: `${player.username}_collection.png` });
+              await dmChannel.send({
+                content: `🎴 **Your HALT Go Collection!**\nYou collected **${player.allCards.length} cards** and scored **${playerResult.totalScore} points**!\nSave this image as a keepsake! 🐾`,
+                files: [dmAttachment],
+              });
+            } catch (dmError) {
+              console.error(`Failed to DM collection to ${player.username}:`, dmError.message);
+            }
+          }
+        } catch (galleryError) {
+          console.error(`Failed to generate gallery for ${playerResult.username}:`, galleryError.message);
+        }
+      }
+
+      // Clean up temp files after a delay
+      setTimeout(() => {
+        cleanupTempFiles(`sel_${game.channelId}_`);
+        cleanupTempFiles(`gallery_${game.channelId}_`);
+      }, 60000);
+
     } catch (error) {
       console.error('Error in gameEnd handler:', error.message);
     }

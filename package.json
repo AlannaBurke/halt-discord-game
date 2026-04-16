@@ -8,11 +8,19 @@
     "deploy": "node src/commands/deploy-commands.js",
     "test": "node test/test-engine.js"
   },
-  "keywords": ["discord", "game", "card-game", "sushi-go", "rescue", "animals"],
+  "keywords": [
+    "discord",
+    "game",
+    "card-game",
+    "sushi-go",
+    "rescue",
+    "animals"
+  ],
   "author": "Helping All Little Things",
   "license": "MIT",
   "packageManager": "pnpm@10.33.0",
   "dependencies": {
+    "@napi-rs/canvas": "^0.1.98",
     "discord.js": "^14.26.3",
     "dotenv": "^17.4.2"
   }
