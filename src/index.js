@@ -542,6 +542,29 @@ function setupGameEvents(game) {
 }
 
 // ============================================================
+// Settings Dashboard
+// ============================================================
+if (process.env.SETTINGS_ENABLED === 'true') {
+  const { createSettingsApp } = require('./settings/server');
+
+  const settingsPort = parseInt(process.env.SETTINGS_PORT) || 3000;
+  const settingsApp = createSettingsApp({
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    redirectUri: process.env.SETTINGS_REDIRECT_URI || `http://localhost:${settingsPort}/auth/callback`,
+    adminRoleId: process.env.SETTINGS_ADMIN_ROLE_ID,
+    guildId: process.env.GUILD_ID,
+    sessionSecret: process.env.SESSION_SECRET || 'halt-go-secret-change-me',
+  });
+
+  settingsApp.listen(settingsPort, () => {
+    console.log(`\u2699\ufe0f  Settings dashboard running at http://localhost:${settingsPort}`);
+  });
+} else {
+  console.log('\u2139\ufe0f  Settings dashboard disabled (set SETTINGS_ENABLED=true to enable)');
+}
+
+// ============================================================
 // Login
 // ============================================================
 client.login(process.env.DISCORD_TOKEN);

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HALT Go — Settings</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #16213e;
+      --surface-hover: #1c2a4a;
+      --accent: #e8a0bf;
+      --accent-dim: #c47a9a;
+      --text: #eee;
+      --text-muted: #999;
+      --success: #4ade80;
+      --danger: #f87171;
+      --border-radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: var(--surface);
+      border-bottom: 2px solid var(--accent-dim);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+
+    .header h1 span { color: var(--text); font-weight: 400; }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-info img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+
+    .user-info .username { color: var(--text-muted); font-size: 0.9rem; }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-login {
+      background: #5865F2;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 10px;
+    }
+
+    .btn-login:hover { background: #4752C4; }
+
+    .btn-logout {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid #444;
+    }
+
+    .btn-logout:hover { color: var(--danger); border-color: var(--danger); }
+
+    .btn-upload {
+      background: var(--accent);
+      color: #1a1a2e;
+    }
+
+    .btn-upload:hover { background: var(--accent-dim); color: white; }
+
+    .btn-reset {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid #444;
+      font-size: 0.8rem;
+    }
+
+    .btn-reset:hover { color: var(--danger); border-color: var(--danger); }
+
+    /* Login Screen */
+    .login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      gap: 1.5rem;
+      text-align: center;
+    }
+
+    .login-screen h2 { font-size: 2rem; color: var(--accent); }
+    .login-screen p { color: var(--text-muted); max-width: 400px; line-height: 1.6; }
+
+    .error-banner {
+      background: rgba(248, 113, 113, 0.15);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      max-width: 500px;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    .dashboard h2 {
+      font-size: 1.3rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .dashboard p.subtitle {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+
+    /* Card Grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card-item {
+      background: var(--surface);
+      border-radius: var(--border-radius);
+      padding: 1.25rem;
+      border: 1px solid #2a2a4a;
+      transition: border-color 0.2s;
+    }
+
+    .card-item:hover { border-color: var(--accent-dim); }
+
+    .card-item-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-item-header .emoji { font-size: 1.5rem; }
+
+    .card-item-header .info h3 {
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .card-item-header .info p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .card-images {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      align-items: flex-start;
+    }
+
+    .card-preview {
+      text-align: center;
+    }
+
+    .card-preview label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-preview img {
+      width: 120px;
+      height: auto;
+      border-radius: 8px;
+      border: 2px solid #2a2a4a;
+      transition: border-color 0.2s;
+    }
+
+    .card-preview img.active { border-color: var(--success); }
+    .card-preview img.custom { border-color: var(--accent); }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .card-actions input[type="file"] { display: none; }
+
+    .card-status {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+
+    .card-status.default {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+    }
+
+    .card-status.custom-badge {
+      background: rgba(232, 160, 191, 0.15);
+      color: var(--accent);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: var(--success); color: #1a1a2e; }
+    .toast.error { background: var(--danger); color: white; }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      display: none;
+    }
+
+    .loading-overlay.show { display: flex; }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #333;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .footer a { color: var(--accent-dim); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>HALT Go <span>Settings</span></h1>
+    <div id="header-right"></div>
+  </div>
+
+  <div id="app"></div>
+
+  <div class="toast" id="toast"></div>
+  <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+
+  <div class="footer">
+    <a href="https://helpingalllittlethings.org" target="_blank">Helping All Little Things</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://github.com/AlannaBurke/halt-discord-game" target="_blank">GitHub</a>
+  </div>
+
+  <script>
+    // ============================================================
+    // State
+    // ============================================================
+    let currentUser = null;
+    let cards = [];
+
+    // ============================================================
+    // Init
+    // ============================================================
+    async function init() {
+      const errorMap = {
+        no_code: 'Discord login failed — no authorization code received.',
+        token_failed: 'Discord login failed — could not exchange token.',
+        not_in_guild: 'You are not a member of the required Discord server.',
+        no_role: 'You do not have the required admin role to access settings.',
+        auth_failed: 'Discord authentication failed. Please try again.',
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get('error');
+
+      // Clean URL
+      if (error) {
+        window.history.replaceState({}, '', '/');
+      }
+
+      // Check auth
+      try {
+        const res = await fetch('/api/auth');
+        const data = await res.json();
+
+        if (data.authenticated) {
+          currentUser = data.user;
+          renderHeader();
+          await loadCards();
+          renderDashboard();
+        } else {
+          renderLogin(error ? errorMap[error] || 'An error occurred.' : null);
+        }
+      } catch (e) {
+        renderLogin('Could not connect to the server.');
+      }
+    }
+
+    // ============================================================
+    // Render Functions
+    // ============================================================
+    function renderHeader() {
+      const el = document.getElementById('header-right');
+      if (currentUser) {
+        el.innerHTML = `
+          <div class="user-info">
+            ${currentUser.avatar ? `<img src="${currentUser.avatar}" alt="">` : ''}
+            <span class="username">${currentUser.globalName}</span>
+            <a href="/auth/logout" class="btn btn-logout">Logout</a>
+          </div>
+        `;
+      } else {
+        el.innerHTML = '';
+      }
+    }
+
+    function renderLogin(error) {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="login-screen">
+          <h2>HALT Go Settings</h2>
+          <p>Manage card images for your HALT Go Discord game. Login with Discord to continue.</p>
+          ${error ? `<div class="error-banner">${error}</div>` : ''}
+          <a href="/auth/login" class="btn btn-login">Login with Discord</a>
+        </div>
+      `;
+    }
+
+    function renderDashboard() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="dashboard">
+          <h2>Card Image Manager</h2>
+          <p class="subtitle">Upload custom images for any card. Changes take effect immediately in the game.</p>
+          <div class="card-grid" id="card-grid"></div>
+        </div>
+      `;
+
+      const grid = document.getElementById('card-grid');
+      for (const card of cards) {
+        grid.appendChild(createCardElement(card));
+      }
+    }
+
+    function createCardElement(card) {
+      const el = document.createElement('div');
+      el.className = 'card-item';
+      el.id = `card-${card.id}`;
+
+      const customSrc = card.hasCustomImage
+        ? `${card.customImage}?t=${Date.now()}`
+        : null;
+
+      el.innerHTML = `
+        <div class="card-item-header">
+          <span class="emoji">${card.emoji}</span>
+          <div class="info">
+            <h3>${card.name}</h3>
+            <p>${card.description}</p>
+          </div>
+        </div>
+        <div class="card-images">
+          <div class="card-preview">
+            <label>Discord Card</label>
+            <img src="${card.discordImage}?t=${Date.now()}" alt="${card.name} Discord card" class="active">
+          </div>
+          <div class="card-preview">
+            <label>Original Art</label>
+            <img src="${card.originalImage}" alt="${card.name} original">
+          </div>
+          ${customSrc ? `
+          <div class="card-preview">
+            <label>Custom Art</label>
+            <img src="${customSrc}" alt="${card.name} custom" class="custom">
+          </div>
+          ` : ''}
+        </div>
+        <div class="card-actions">
+          <input type="file" id="file-${card.id}" accept="image/*" onchange="uploadCard('${card.id}', this)">
+          <button class="btn btn-upload" onclick="document.getElementById('file-${card.id}').click()">
+            Upload Image
+          </button>
+          ${card.hasCustomImage ? `
+            <button class="btn btn-reset" onclick="resetCard('${card.id}')">
+              Reset to Default
+            </button>
+            <span class="card-status custom-badge">Custom</span>
+          ` : `
+            <span class="card-status default">Default</span>
+          `}
+        </div>
+      `;
+
+      return el;
+    }
+
+    // ============================================================
+    // API Functions
+    // ============================================================
+    async function loadCards() {
+      const res = await fetch('/api/cards');
+      const data = await res.json();
+      cards = data.cards;
+    }
+
+    async function uploadCard(cardId, input) {
+      if (!input.files || !input.files[0]) return;
+
+      const file = input.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Image must be under 5MB', 'error');
+        return;
+      }
+
+      showLoading(true);
+
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const res = await fetch(`/api/cards/${cardId}/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          showToast(data.message, 'success');
+          // Refresh cards
+          await loadCards();
+          renderDashboard();
+        } else {
+          showToast(data.error || 'Upload failed', 'error');
+        }
+      } catch (e) {
+        showToast('Upload failed — check console for details', 'error');
+        console.error(e);
+      } finally {
+        showLoading(false);
+        input.value = '';
+      }
+    }
+
+    async function resetCard(cardId) {
+      if (!confirm('Reset this card to the default image?')) return;
+
+      showLoading(true);
+
+      try {
+        const res = await fetch(`/api/cards/${cardId}/reset`, {
+          method: 'POST',
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          showToast(data.message, 'success');
+          await loadCards();
+          renderDashboard();
+        } else {
+          showToast(data.error || 'Reset failed', 'error');
+        }
+      } catch (e) {
+        showToast('Reset failed', 'error');
+        console.error(e);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // ============================================================
+    // UI Helpers
+    // ============================================================
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function showLoading(show) {
+      document.getElementById('loading').classList.toggle('show', show);
+    }
+
+    // ============================================================
+    // Start
+    // ============================================================
+    init();
+  </script>
+</body>
+</html>

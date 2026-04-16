@@ -111,16 +111,54 @@ pnpm start
 7. After all 7 phases, round scores are shown
 8. After 3 rounds, final scores (including Sanctuary Cat bonuses) determine the winner!
 
+## Settings Dashboard (Optional)
+
+HALT Go includes an optional web-based settings dashboard for managing custom card images. It uses Discord OAuth2 for authentication and requires a specific Discord role for access.
+
+### Setting Up the Dashboard
+
+1. **Enable OAuth2 in Discord Developer Portal:**
+   - Go to your application in the [Discord Developer Portal](https://discord.com/developers/applications)
+   - Navigate to **OAuth2** and note your **Client Secret**
+   - Add a redirect URI: `http://localhost:3000/auth/callback` (or your production URL)
+
+2. **Create an admin role in your Discord server:**
+   - Go to **Server Settings > Roles** and create a role (e.g., "Bot Admin")
+   - Enable Developer Mode (User Settings > Advanced > Developer Mode)
+   - Right-click the role and **Copy Role ID**
+
+3. **Add settings variables to your `.env` file:**
+
+```
+SETTINGS_ENABLED=true
+CLIENT_SECRET=your_oauth2_client_secret
+SETTINGS_ADMIN_ROLE_ID=your_admin_role_id
+SETTINGS_PORT=3000
+SETTINGS_REDIRECT_URI=http://localhost:3000/auth/callback
+SESSION_SECRET=a-random-secret-string
+```
+
+4. **Restart the bot** — the dashboard will be available at `http://localhost:3000`
+
+### Dashboard Features
+
+- **Discord OAuth2 login** with role-based access control
+- **Upload custom images** for any of the 9 card types
+- **Auto-regeneration** of Discord-sized cards with frames, titles, and scoring text
+- **Preview** original, custom, and Discord-rendered versions side by side
+- **Reset** any card back to the default kawaii art
+- Changes take effect **immediately** in the next game
+
 ## Project Structure
 
 ```
 halt-discord-game/
 ├── src/
-│   ├── index.js              # Bot entry point
+│   ├── index.js              # Bot entry point + settings server startup
 │   ├── commands/
 │   │   └── deploy-commands.js # Slash command registration
 │   ├── game/
-│   │   ├── Game.js           # Single game instance
+│   │   ├── Game.js           # Single game instance (+ computer player)
 │   │   ├── GameManager.js    # Manages active games
 │   │   ├── Player.js         # Player state
 │   │   ├── CardGenerator.js  # Weighted random card generation
@@ -129,11 +167,17 @@ halt-discord-game/
 │   │   ├── embeds.js         # Discord embed builders
 │   │   ├── buttons.js        # Button component builders
 │   │   └── cardRenderer.js   # Card image compositing (hand, selection, gallery)
+│   ├── settings/
+│   │   ├── server.js         # Express settings dashboard server
+│   │   ├── cardPipeline.js   # Card regeneration pipeline (Node.js canvas)
+│   │   └── public/
+│   │       └── index.html    # Settings dashboard frontend
 │   └── utils/
 │       └── constants.js      # Card types, scoring tables, config
 ├── assets/
 │   └── cards/
 │       ├── *.png             # Original kawaii card art (9 cards)
+│       ├── custom/           # User-uploaded custom card art
 │       └── discord/          # Discord-sized card images with frames & scoring text
 ├── test/
 │   ├── test-engine.js        # Core engine tests

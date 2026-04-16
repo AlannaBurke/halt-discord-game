@@ -285,9 +285,18 @@ function cleanupTempFiles(prefix) {
   }
 }
 
+/**
+ * Clear the card image cache (called when custom images are uploaded)
+ */
+function _clearCache() {
+  cardImageCache.clear();
+  console.log('Card image cache cleared');
+}
+
 module.exports = {
   generateHandImage,
   generateSelectionImage,
   generateCollectibleGallery,
   cleanupTempFiles,
+  _clearCache,
 };
