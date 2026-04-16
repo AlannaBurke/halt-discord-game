@@ -1,4 +1,4 @@
-const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 const path = require('path');
 const fs = require('fs');
 const { CARD_INFO } = require('../utils/constants');
@@ -11,7 +11,18 @@ if (!fs.existsSync(TEMP_DIR)) {
   fs.mkdirSync(TEMP_DIR, { recursive: true });
 }
 
-// Card dimensions
+// Register Noto Sans fonts for crisp text rendering
+const FONT_DIR = '/usr/share/fonts/truetype/noto';
+try {
+  GlobalFonts.registerFromPath(path.join(FONT_DIR, 'NotoSans-Bold.ttf'), 'NotoSans-Bold');
+  GlobalFonts.registerFromPath(path.join(FONT_DIR, 'NotoSans-SemiBold.ttf'), 'NotoSans-SemiBold');
+  GlobalFonts.registerFromPath(path.join(FONT_DIR, 'NotoSans-Medium.ttf'), 'NotoSans-Medium');
+  GlobalFonts.registerFromPath(path.join(FONT_DIR, 'NotoSans-Regular.ttf'), 'NotoSans-Regular');
+} catch (e) {
+  console.warn('Could not register Noto Sans fonts, falling back to system fonts:', e.message);
+}
+
+// Card dimensions (1x)
 const CARD_W = 240;
 const CARD_H = 340;
 
@@ -89,7 +100,7 @@ async function generateHandImage(cardTypes, filename) {
 }
 
 /**
- * Generate a selection display: cards laid out for choosing
+ * Generate a selection display: cards laid out for choosing.
  * Each card has a number label below it.
  *
  * @param {string[]} cardTypes - Array of card type strings
@@ -100,7 +111,6 @@ async function generateSelectionImage(cardTypes, filename) {
   if (!cardTypes || cardTypes.length === 0) return null;
 
   const gap = 8;
-  const labelHeight = 0; // No labels needed since buttons handle selection
   const padding = 8;
 
   // For many cards, scale them down
@@ -115,7 +125,7 @@ async function generateSelectionImage(cardTypes, filename) {
   const scaledH = Math.round(CARD_H * scale);
 
   const totalW = padding * 2 + cardTypes.length * scaledW + (cardTypes.length - 1) * gap;
-  const totalH = padding * 2 + scaledH + labelHeight;
+  const totalH = padding * 2 + scaledH;
 
   const canvas = createCanvas(totalW, totalH);
   const ctx = canvas.getContext('2d');
@@ -144,9 +154,10 @@ async function generateSelectionImage(cardTypes, filename) {
 /**
  * Generate a collectible card gallery for end-of-game.
  * Shows all cards a player collected across all rounds, grouped nicely.
+ * Renders at 2x resolution for crisp text, then downscales.
  *
  * @param {string} playerName - Player's display name
- * @param {Object[]} roundScores - Array of { score, cards } per round
+ * @param {string[]} allCards - All cards collected across all rounds
  * @param {number} totalScore - Final total score
  * @param {string} filename - Output filename
  * @returns {Promise<string>} Path to the generated image
@@ -161,15 +172,16 @@ async function generateCollectibleGallery(playerName, allCards, totalScore, file
   ];
   const sorted = [...allCards].sort((a, b) => sortOrder.indexOf(a) - sortOrder.indexOf(b));
 
-  // Layout: up to 7 cards per row
+  // Layout at 2x for crisp text
+  const S = 2;
   const maxPerRow = 7;
   const scale = 0.7;
-  const scaledW = Math.round(CARD_W * scale);
-  const scaledH = Math.round(CARD_H * scale);
-  const gap = 6;
-  const padding = 16;
-  const headerHeight = 50;
-  const footerHeight = 30;
+  const scaledW = Math.round(CARD_W * scale * S);
+  const scaledH = Math.round(CARD_H * scale * S);
+  const gap = 6 * S;
+  const padding = 16 * S;
+  const headerHeight = 54 * S;
+  const footerHeight = 30 * S;
 
   const rows = Math.ceil(sorted.length / maxPerRow);
   const maxCols = Math.min(sorted.length, maxPerRow);
@@ -183,25 +195,26 @@ async function generateCollectibleGallery(playerName, allCards, totalScore, file
   // Background
   ctx.fillStyle = '#FFF8F0';
   ctx.beginPath();
-  roundRect(ctx, 0, 0, totalW, totalH, 16);
+  roundRect(ctx, 0, 0, totalW, totalH, 16 * S);
   ctx.fill();
 
   // Border
   ctx.strokeStyle = '#E8A0BF';
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 3 * S;
   ctx.beginPath();
-  roundRect(ctx, 1, 1, totalW - 2, totalH - 2, 16);
+  roundRect(ctx, 1 * S, 1 * S, totalW - 2 * S, totalH - 2 * S, 16 * S);
   ctx.stroke();
 
-  // Header text
+  // Header — player name
   ctx.fillStyle = '#4A4A4A';
-  ctx.font = 'bold 20px sans-serif';
+  ctx.font = `bold ${22 * S}px "NotoSans-Bold", "Noto Sans", sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText(`${playerName}'s Collection`, totalW / 2, padding + 24);
+  ctx.fillText(`${playerName}'s Collection`, totalW / 2, padding + 26 * S);
 
-  ctx.font = '14px sans-serif';
+  // Header — subtitle
+  ctx.font = `${14 * S}px "NotoSans-Regular", "Noto Sans", sans-serif`;
   ctx.fillStyle = '#888888';
-  ctx.fillText(`${sorted.length} cards • ${totalScore} points`, totalW / 2, padding + 42);
+  ctx.fillText(`${sorted.length} cards \u2022 ${totalScore} points`, totalW / 2, padding + 46 * S);
 
   // Draw cards
   for (let i = 0; i < sorted.length; i++) {
@@ -220,13 +233,20 @@ async function generateCollectibleGallery(playerName, allCards, totalScore, file
 
   // Footer
   ctx.fillStyle = '#CCAACC';
-  ctx.font = '10px sans-serif';
+  ctx.font = `${11 * S}px "NotoSans-Regular", "Noto Sans", sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText('HALT Go • helpingalllittlethings.org', totalW / 2, totalH - padding);
+  ctx.fillText('HALT Go \u2022 helpingalllittlethings.org', totalW / 2, totalH - padding);
+
+  // Downscale to 1x for final output
+  const finalW = Math.round(totalW / S);
+  const finalH = Math.round(totalH / S);
+  const finalCanvas = createCanvas(finalW, finalH);
+  const finalCtx = finalCanvas.getContext('2d');
+  finalCtx.drawImage(canvas, 0, 0, finalW, finalH);
 
   // Save
   const outputPath = path.join(TEMP_DIR, filename);
-  const buffer = canvas.toBuffer('image/png');
+  const buffer = finalCanvas.toBuffer('image/png');
   fs.writeFileSync(outputPath, buffer);
 
   return outputPath;

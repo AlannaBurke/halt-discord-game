@@ -1,0 +1,6 @@
+Card image fix notes:
+- Text is now crisp: rendered at 2x (480x680) then downscaled to 240x340 with LANCZOS
+- Arrow characters replaced with plain text (= and :) to avoid rendering boxes
+- Using Noto Sans Bold/Medium/Regular fonts for clean rendering
+- All 9 cards verified: Rat, Gerbil, Pregnant Hamster, Hay, Guinea Pig, Rabbit, Chinchilla, Degus, Sanctuary Cat
+- Text is sharp and readable at Discord embed sizes
