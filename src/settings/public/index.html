@@ -9,12 +9,16 @@
       --bg: #1a1a2e;
       --surface: #16213e;
       --surface-hover: #1c2a4a;
+      --surface-light: #1e2d50;
       --accent: #e8a0bf;
       --accent-dim: #c47a9a;
       --text: #eee;
       --text-muted: #999;
+      --text-body: #ccc;
       --success: #4ade80;
       --danger: #f87171;
+      --warning: #fbbf24;
+      --info: #60a5fa;
       --border-radius: 12px;
     }
 
@@ -27,22 +31,55 @@
       min-height: 100vh;
     }
 
-    /* Header */
+    /* ============================================================
+       Header
+       ============================================================ */
     .header {
       background: var(--surface);
       border-bottom: 2px solid var(--accent-dim);
-      padding: 1rem 2rem;
+      padding: 0.75rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
     }
 
     .header h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       color: var(--accent);
+      cursor: pointer;
     }
 
     .header h1 span { color: var(--text); font-weight: 400; }
+
+    /* Navigation */
+    .nav {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover { background: var(--surface-hover); color: var(--text); }
+    .nav-btn.active { background: var(--accent-dim); color: white; }
 
     .user-info {
       display: flex;
@@ -58,6 +95,9 @@
 
     .user-info .username { color: var(--text-muted); font-size: 0.9rem; }
 
+    /* ============================================================
+       Buttons
+       ============================================================ */
     .btn {
       padding: 0.5rem 1rem;
       border: none;
@@ -66,6 +106,8 @@
       font-size: 0.85rem;
       font-weight: 600;
       transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
     }
 
     .btn-login {
@@ -102,7 +144,9 @@
 
     .btn-reset:hover { color: var(--danger); border-color: var(--danger); }
 
-    /* Login Screen */
+    /* ============================================================
+       Login Screen
+       ============================================================ */
     .login-screen {
       display: flex;
       flex-direction: column;
@@ -125,26 +169,185 @@
       max-width: 500px;
     }
 
-    /* Dashboard */
-    .dashboard {
-      max-width: 1200px;
+    /* ============================================================
+       Page Container
+       ============================================================ */
+    .page {
+      max-width: 1000px;
       margin: 2rem auto;
-      padding: 0 2rem;
+      padding: 0 2rem 4rem;
     }
 
-    .dashboard h2 {
-      font-size: 1.3rem;
+    .page h2 {
+      font-size: 1.5rem;
       color: var(--accent);
       margin-bottom: 0.5rem;
     }
 
-    .dashboard p.subtitle {
+    .page h3 {
+      font-size: 1.15rem;
+      color: var(--accent);
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid #2a2a4a;
+    }
+
+    .page h4 {
+      font-size: 1rem;
+      color: var(--text);
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .page p, .page li {
+      color: var(--text-body);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+
+    .page p { margin-bottom: 1rem; }
+
+    .page ul, .page ol {
+      margin-bottom: 1rem;
+      padding-left: 1.5rem;
+    }
+
+    .page li { margin-bottom: 0.4rem; }
+
+    .page p.subtitle {
       color: var(--text-muted);
       margin-bottom: 2rem;
       font-size: 0.9rem;
     }
 
-    /* Card Grid */
+    /* ============================================================
+       Content Cards / Panels
+       ============================================================ */
+    .panel {
+      background: var(--surface);
+      border-radius: var(--border-radius);
+      padding: 1.25rem 1.5rem;
+      border: 1px solid #2a2a4a;
+      margin-bottom: 1rem;
+    }
+
+    .panel-accent {
+      border-left: 3px solid var(--accent);
+    }
+
+    .panel-info {
+      border-left: 3px solid var(--info);
+    }
+
+    .panel-warning {
+      border-left: 3px solid var(--warning);
+    }
+
+    .panel h4 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+
+    .panel p:last-child { margin-bottom: 0; }
+
+    /* ============================================================
+       Tables
+       ============================================================ */
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .styled-table th {
+      background: var(--surface);
+      color: var(--accent);
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--accent-dim);
+      font-weight: 600;
+    }
+
+    .styled-table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid #2a2a4a;
+      color: var(--text-body);
+    }
+
+    .styled-table tr:hover td {
+      background: var(--surface-hover);
+    }
+
+    .styled-table .emoji-cell {
+      font-size: 1.3rem;
+      width: 40px;
+      text-align: center;
+    }
+
+    /* ============================================================
+       Code Blocks
+       ============================================================ */
+    .code-block {
+      background: #0d1117;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.85rem;
+      color: #c9d1d9;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+      white-space: pre;
+    }
+
+    .code-inline {
+      background: #0d1117;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.85rem;
+      color: #c9d1d9;
+    }
+
+    /* ============================================================
+       Steps List
+       ============================================================ */
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .steps li {
+      counter-increment: step;
+      position: relative;
+      padding-left: 3rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2rem;
+      height: 2rem;
+      background: var(--accent-dim);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    /* ============================================================
+       Card Grid (Card Manager)
+       ============================================================ */
     .card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -173,11 +376,15 @@
     .card-item-header .info h3 {
       font-size: 1rem;
       color: var(--text);
+      margin: 0;
+      border: none;
+      padding: 0;
     }
 
     .card-item-header .info p {
       font-size: 0.8rem;
       color: var(--text-muted);
+      margin: 0;
     }
 
     .card-images {
@@ -187,9 +394,7 @@
       align-items: flex-start;
     }
 
-    .card-preview {
-      text-align: center;
-    }
+    .card-preview { text-align: center; }
 
     .card-preview label {
       display: block;
@@ -237,7 +442,9 @@
       color: var(--accent);
     }
 
-    /* Toast */
+    /* ============================================================
+       Toast
+       ============================================================ */
     .toast {
       position: fixed;
       bottom: 2rem;
@@ -261,11 +468,10 @@
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.5);
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       z-index: 999;
-      display: none;
     }
 
     .loading-overlay.show { display: flex; }
@@ -281,7 +487,9 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Footer */
+    /* ============================================================
+       Footer
+       ============================================================ */
     .footer {
       text-align: center;
       padding: 2rem;
@@ -291,11 +499,26 @@
 
     .footer a { color: var(--accent-dim); text-decoration: none; }
     .footer a:hover { text-decoration: underline; }
+
+    /* ============================================================
+       Responsive
+       ============================================================ */
+    @media (max-width: 768px) {
+      .header { padding: 0.5rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+      .header-left { gap: 1rem; }
+      .nav-btn { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+      .page { padding: 0 1rem 3rem; }
+      .card-grid { grid-template-columns: 1fr; }
+      .card-images { flex-wrap: wrap; }
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>HALT Go <span>Settings</span></h1>
+    <div class="header-left">
+      <h1 onclick="navigate('gameplay')">HALT Go</h1>
+      <nav class="nav" id="nav"></nav>
+    </div>
     <div id="header-right"></div>
   </div>
 
@@ -308,6 +531,8 @@
     <a href="https://helpingalllittlethings.org" target="_blank">Helping All Little Things</a>
     &nbsp;&middot;&nbsp;
     <a href="https://github.com/AlannaBurke/halt-discord-game" target="_blank">GitHub</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://github.com/AlannaBurke/halt-discord-game/issues" target="_blank">Report an Issue</a>
   </div>
 
   <script>
@@ -316,6 +541,7 @@
     // ============================================================
     let currentUser = null;
     let cards = [];
+    let currentPage = 'gameplay';
 
     // ============================================================
     // Init
@@ -331,13 +557,16 @@
 
       const params = new URLSearchParams(window.location.search);
       const error = params.get('error');
+      const page = params.get('page');
 
-      // Clean URL
       if (error) {
         window.history.replaceState({}, '', '/');
       }
 
-      // Check auth
+      if (page) {
+        currentPage = page;
+      }
+
       try {
         const res = await fetch('/api/auth');
         const data = await res.json();
@@ -345,8 +574,9 @@
         if (data.authenticated) {
           currentUser = data.user;
           renderHeader();
+          renderNav();
           await loadCards();
-          renderDashboard();
+          navigate(currentPage);
         } else {
           renderLogin(error ? errorMap[error] || 'An error occurred.' : null);
         }
@@ -356,7 +586,39 @@
     }
 
     // ============================================================
-    // Render Functions
+    // Navigation
+    // ============================================================
+    function navigate(page) {
+      currentPage = page;
+      window.history.replaceState({}, '', `/?page=${page}`);
+      updateNavActive();
+
+      switch (page) {
+        case 'gameplay': renderGameplayPage(); break;
+        case 'cards': renderCardsPage(); break;
+        case 'setup': renderSetupPage(); break;
+        default: renderGameplayPage();
+      }
+    }
+
+    function renderNav() {
+      const nav = document.getElementById('nav');
+      nav.innerHTML = `
+        <button class="nav-btn" data-page="gameplay" onclick="navigate('gameplay')">How to Play</button>
+        <button class="nav-btn" data-page="cards" onclick="navigate('cards')">Card Manager</button>
+        <button class="nav-btn" data-page="setup" onclick="navigate('setup')">Setup Guide</button>
+      `;
+      updateNavActive();
+    }
+
+    function updateNavActive() {
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.page === currentPage);
+      });
+    }
+
+    // ============================================================
+    // Header
     // ============================================================
     function renderHeader() {
       const el = document.getElementById('header-right');
@@ -374,23 +636,201 @@
     }
 
     function renderLogin(error) {
+      document.getElementById('nav').innerHTML = '';
       const app = document.getElementById('app');
       app.innerHTML = `
         <div class="login-screen">
-          <h2>HALT Go Settings</h2>
-          <p>Manage card images for your HALT Go Discord game. Login with Discord to continue.</p>
+          <h2>HALT Go</h2>
+          <p>A simultaneous multiplayer card drafting Discord game with adorable rescue animals. Login with Discord to access the dashboard.</p>
           ${error ? `<div class="error-banner">${error}</div>` : ''}
           <a href="/auth/login" class="btn btn-login">Login with Discord</a>
         </div>
       `;
     }
 
-    function renderDashboard() {
+    // ============================================================
+    // Page: How to Play
+    // ============================================================
+    function renderGameplayPage() {
       const app = document.getElementById('app');
       app.innerHTML = `
-        <div class="dashboard">
+        <div class="page">
+          <h2>How to Play HALT Go</h2>
+          <p>HALT Go is a simultaneous multiplayer card drafting game played through Discord, inspired by
+          <a href="https://youtu.be/-WO1cP9wzrw" target="_blank" style="color: var(--accent);">Sushi Go</a>.
+          Players draft adorable rescue animal cards over multiple rounds, building the best collection for the highest score.</p>
+
+          <h3>Overview</h3>
+          <p>Each game consists of <strong>3 rounds</strong>, and each round has <strong>7 phases</strong>.
+          In every phase, all players simultaneously choose one card from their available options.
+          The number of cards to choose from shrinks each phase (starting at 8, ending at 2).
+          After each round, scores are calculated and cards are cleared. After all 3 rounds,
+          final end-game bonuses are applied and the player with the highest total score wins.</p>
+
+          <h3>Starting a Game</h3>
+          <ol class="steps">
+            <li>Use the <span class="code-inline">/game</span> slash command in any channel where the bot is active to create a game lobby.</li>
+            <li>Other players click the <strong>Join Game</strong> button to join the lobby (2-10 players).</li>
+            <li>Optionally, the host can toggle the <strong>Computer Player</strong> button to add HALTbot, a computer opponent that picks cards randomly. This is great for testing or solo play.</li>
+            <li>When everyone is ready, the host clicks <strong>Start Game</strong> to begin.</li>
+          </ol>
+
+          <h3>Playing a Phase</h3>
+          <p>Each phase works like this:</p>
+          <ol>
+            <li>The bot announces the current round and phase in the game channel.</li>
+            <li>Each player receives a <strong>DM (Direct Message)</strong> from the bot showing their available cards as images.</li>
+            <li>Players click a button to select the card they want to keep.</li>
+            <li>You have <strong>60 seconds</strong> to make your choice. If time runs out, a random card is selected for you.</li>
+            <li>Once all players have chosen, the next phase begins.</li>
+          </ol>
+
+          <div class="panel panel-info">
+            <h4>Tip: Enable DMs</h4>
+            <p>Make sure you have DMs enabled for the server. Go to <strong>Server Settings > Privacy Settings</strong> and enable "Direct Messages from server members." The bot sends your card choices via DM to keep them secret from other players.</p>
+          </div>
+
+          <h3>Phase Structure</h3>
+          <p>Each round has 7 phases. The number of cards you can choose from decreases each phase:</p>
+
+          <table class="styled-table">
+            <thead>
+              <tr><th>Phase</th><th>Cards Available</th><th>Strategy Note</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>8 cards</td><td>Maximum choice — set your strategy early</td></tr>
+              <tr><td>2</td><td>7 cards</td><td>Still plenty of options</td></tr>
+              <tr><td>3</td><td>6 cards</td><td>Start committing to combos</td></tr>
+              <tr><td>4</td><td>5 cards</td><td>Mid-round pivot point</td></tr>
+              <tr><td>5</td><td>4 cards</td><td>Options narrowing</td></tr>
+              <tr><td>6</td><td>3 cards</td><td>Take what you can get</td></tr>
+              <tr><td>7</td><td>2 cards</td><td>Final pick of the round</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Card Types &amp; Scoring</h3>
+          <p>There are 9 different card types, each with unique scoring mechanics. Understanding how they work is key to winning.</p>
+
+          <table class="styled-table">
+            <thead>
+              <tr><th></th><th>Card</th><th>How It Scores</th><th>Strategy</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="emoji-cell">&#x1f400;</td>
+                <td><strong>Rat</strong></td>
+                <td>Scaling set: 1=1, 2=3, 3=6, 4=10, 5+=15 pts</td>
+                <td>High reward for collecting many, but diminishing returns after 5</td>
+              </tr>
+              <tr>
+                <td class="emoji-cell">&#x1f439;</td>
+                <td><strong>Gerbil</strong></td>
+                <td>Majority: Most=+6, 2nd most=+3 pts</td>
+                <td>Compete with other players for the most gerbils</td>
+              </tr>
+              <tr>
+                <td class="emoji-cell">&#x1f930;</td>
+                <td><strong>Pregnant Hamster</strong></td>
+                <td>Swap for 2 new random cards</td>
+                <td>Gamble for better cards — you lose this card but gain 2 new ones</td>
+              </tr>
+              <tr>
+                <td class="emoji-cell">&#x1f33e;</td>
+                <td><strong>Hay</strong></td>
+                <td>Triples the value of the next Guinea Pig, Rabbit, or Chinchilla</td>
+                <td>Powerful multiplier — pick Hay before a high-value animal</td>
+              </tr>
+              <tr>
+                <td class="emoji-cell">&#x1f439;</td>
+                <td><strong>Guinea Pig</strong></td>
+                <td>3 points each (9 with Hay)</td>
+                <td>Reliable points, excellent Hay target</td>
+              </tr>
+              <tr>
+                <td class="emoji-cell">&#x1f430;</td>
+                <td><strong>Rabbit</strong></td>
+                <td>2 points each (6 with Hay)</td>
+                <td>Solid mid-tier value</td>
+              </tr>
+              <tr>
+                <td class="emoji-cell">&#x1f42d;</td>
+                <td><strong>Chinchilla</strong></td>
+                <td>1 point each (3 with Hay)</td>
+                <td>Low value alone, but common and boosted by Hay</td>
+              </tr>
+              <tr>
+                <td class="emoji-cell">&#x1f43f;&#xfe0f;</td>
+                <td><strong>Degus</strong></td>
+                <td>Set of 3 = 10 pts, otherwise 0</td>
+                <td>All-or-nothing — commit to collecting 3 or skip entirely</td>
+              </tr>
+              <tr>
+                <td class="emoji-cell">&#x1f431;</td>
+                <td><strong>Sanctuary Cat</strong></td>
+                <td>End-game: Most cats=+6, Least cats=-6</td>
+                <td>Scored after all 3 rounds. Avoid having the fewest!</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Scoring</h3>
+          <h4>After Each Round</h4>
+          <p>At the end of each round, the following scores are calculated from the cards you collected that round:</p>
+          <ul>
+            <li><strong>Flat-value cards</strong> (Guinea Pig, Rabbit, Chinchilla) score their base points</li>
+            <li><strong>Hay multipliers</strong> are applied to the next eligible card in your collection</li>
+            <li><strong>Rat sets</strong> are scored based on how many you collected</li>
+            <li><strong>Gerbil majority</strong> is compared across all players</li>
+            <li><strong>Degus sets</strong> are checked (need exactly 3 for points)</li>
+          </ul>
+
+          <h4>After the Final Round</h4>
+          <p><strong>Sanctuary Cat</strong> bonuses are applied across all 3 rounds combined:</p>
+          <ul>
+            <li>The player with the <strong>most</strong> Sanctuary Cats across all rounds gets <strong>+6 points</strong></li>
+            <li>The player with the <strong>fewest</strong> Sanctuary Cats gets <strong>-6 points</strong></li>
+            <li>If there is a tie for most or fewest, the bonus/penalty is split</li>
+          </ul>
+
+          <h3>Collectible Gallery</h3>
+          <p>At the end of the game, every player receives a personalized <strong>collection gallery</strong> image showing all the cards they collected across all 3 rounds, along with their final score. This gallery is posted in the game channel and also sent as a DM so you can save it.</p>
+
+          <h3>Other Commands</h3>
+          <table class="styled-table">
+            <thead>
+              <tr><th>Command</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="code-inline">/game</span></td><td>Create a new game lobby in the current channel</td></tr>
+              <tr><td><span class="code-inline">/help</span></td><td>View the rules and card descriptions in Discord</td></tr>
+              <tr><td><span class="code-inline">/status</span></td><td>Check the status of the current game in the channel</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Tips for New Players</h3>
+          <div class="panel panel-accent">
+            <ul>
+              <li><strong>Watch the Gerbils</strong> — If no one else is collecting them, the majority bonus is easy points.</li>
+              <li><strong>Hay + Guinea Pig = 9 points</strong> — The best Hay combo. Prioritize it when you see both.</li>
+              <li><strong>Commit to Degus or skip them</strong> — Having 1 or 2 Degus is worth nothing. Only go for them if you can get 3.</li>
+              <li><strong>Don't ignore Sanctuary Cats</strong> — Having the fewest costs you 6 points. Pick at least a couple across the game.</li>
+              <li><strong>Pregnant Hamster is a gamble</strong> — You trade 1 known card for 2 random ones. Great early in a round, risky late.</li>
+              <li><strong>Rats cap at 5</strong> — Collecting more than 5 rats doesn't give extra points (still 15).</li>
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // Page: Card Manager
+    // ============================================================
+    function renderCardsPage() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="page">
           <h2>Card Image Manager</h2>
-          <p class="subtitle">Upload custom images for any card. Changes take effect immediately in the game.</p>
+          <p class="subtitle">Upload custom images for any card. When you upload a new image, the Discord-sized card is automatically regenerated with the frame, title, and scoring text. Changes take effect immediately in the next game.</p>
           <div class="card-grid" id="card-grid"></div>
         </div>
       `;
@@ -454,12 +894,153 @@
     }
 
     // ============================================================
+    // Page: Setup Guide
+    // ============================================================
+    function renderSetupPage() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="page">
+          <h2>Setup Guide</h2>
+          <p>Complete guide to setting up the HALT Go Discord bot and this settings dashboard.</p>
+
+          <h3>1. Create a Discord Application</h3>
+          <ol class="steps">
+            <li>Go to the <a href="https://discord.com/developers/applications" target="_blank" style="color: var(--accent);">Discord Developer Portal</a> and click <strong>New Application</strong>. Name it "HALT Go" (or whatever you like).</li>
+            <li>Go to the <strong>Bot</strong> tab. Click <strong>Reset Token</strong> and copy the token — this is your <span class="code-inline">DISCORD_TOKEN</span>. Save it somewhere safe; you cannot view it again.</li>
+            <li>Still on the Bot tab, scroll down to <strong>Privileged Gateway Intents</strong> and enable <strong>Message Content Intent</strong>.</li>
+            <li>Go to the <strong>OAuth2</strong> tab. Copy the <strong>Client ID</strong> — this is your <span class="code-inline">CLIENT_ID</span>.</li>
+            <li>Still on OAuth2, click <strong>Reset Secret</strong> to generate a Client Secret — this is your <span class="code-inline">CLIENT_SECRET</span> (needed for the settings dashboard).</li>
+            <li>Under <strong>Redirects</strong>, click <strong>Add Redirect</strong> and enter:<br>
+              <span class="code-inline">http://localhost:3000/auth/callback</span><br>
+              (Change the port/domain if you're using a different setup.) Click <strong>Save Changes</strong>.</li>
+          </ol>
+
+          <h3>2. Invite the Bot to Your Server</h3>
+          <ol class="steps">
+            <li>Still on the OAuth2 page, scroll to <strong>OAuth2 URL Generator</strong>.</li>
+            <li>Under <strong>Scopes</strong>, check <strong>bot</strong> and <strong>applications.commands</strong>.</li>
+            <li>Under <strong>Bot Permissions</strong>, check:
+              <ul>
+                <li>Send Messages</li>
+                <li>Embed Links</li>
+                <li>Attach Files</li>
+                <li>Use Slash Commands</li>
+                <li>Read Message History</li>
+              </ul>
+            </li>
+            <li>Copy the generated URL at the bottom and open it in your browser. Select your server and authorize the bot.</li>
+          </ol>
+
+          <h3>3. Get Your Guild ID</h3>
+          <div class="panel panel-info">
+            <p>The Guild ID is your Discord server's unique identifier. It's optional but recommended for development — it makes slash commands register instantly instead of waiting up to an hour.</p>
+          </div>
+          <ol class="steps">
+            <li>In Discord, go to <strong>User Settings</strong> (gear icon) > <strong>App Settings</strong> > <strong>Advanced</strong> and enable <strong>Developer Mode</strong>.</li>
+            <li>Right-click your <strong>server name</strong> in the left sidebar and click <strong>Copy Server ID</strong>. This is your <span class="code-inline">GUILD_ID</span>.</li>
+          </ol>
+
+          <h3>4. Get the Admin Role ID (for Settings Dashboard)</h3>
+          <div class="panel panel-info">
+            <p>The settings dashboard requires a Discord role for access control. Only users with this role can log in and manage card images.</p>
+          </div>
+          <ol class="steps">
+            <li>In Discord, go to <strong>Server Settings</strong> (click the server name at the top of the channel list, then "Server Settings").</li>
+            <li>Click <strong>Roles</strong> in the left sidebar.</li>
+            <li>Create a new role (e.g., "Bot Admin") or use an existing one.</li>
+            <li>With Developer Mode enabled, right-click the role name and click <strong>Copy Role ID</strong>. This is your <span class="code-inline">SETTINGS_ADMIN_ROLE_ID</span>.</li>
+            <li>Make sure to <strong>assign this role to yourself</strong> (and anyone else who should access settings) via <strong>Server Settings > Members</strong>.</li>
+          </ol>
+
+          <h3>5. Install and Configure</h3>
+          <div class="code-block">git clone https://github.com/AlannaBurke/halt-discord-game.git
+cd halt-discord-game
+pnpm install
+cp .env.example .env</div>
+
+          <p>Edit the <span class="code-inline">.env</span> file with all the values you collected:</p>
+
+          <div class="code-block"># Required for the bot
+DISCORD_TOKEN=your_bot_token
+CLIENT_ID=your_client_id
+GUILD_ID=your_guild_id
+
+# Required for the settings dashboard
+SETTINGS_ENABLED=true
+CLIENT_SECRET=your_client_secret
+SETTINGS_ADMIN_ROLE_ID=your_role_id
+SETTINGS_PORT=3000
+SETTINGS_REDIRECT_URI=http://localhost:3000/auth/callback
+SESSION_SECRET=any-random-string-here</div>
+
+          <h3>6. Deploy Commands and Start</h3>
+          <div class="code-block"># Register slash commands with Discord
+pnpm run deploy
+
+# Start the bot (and settings dashboard if enabled)
+pnpm start</div>
+
+          <p>You should see output like:</p>
+          <div class="code-block">&#x2705; Logged in as HALT-GO#1234
+&#x1f4ca; Serving 1 guilds
+&#x2699;&#xfe0f;  Settings dashboard running at http://localhost:3000</div>
+
+          <h3>7. Verify Everything Works</h3>
+          <ol class="steps">
+            <li>In Discord, type <span class="code-inline">/help</span> — you should see the HALT Go rules embed.</li>
+            <li>Type <span class="code-inline">/game</span> to create a test lobby. Toggle the computer player on and start a game to test the full flow.</li>
+            <li>Visit <a href="http://localhost:3000" style="color: var(--accent);">http://localhost:3000</a> and log in with Discord to verify the settings dashboard.</li>
+          </ol>
+
+          <h3>Updating After Pulling Changes</h3>
+          <div class="panel panel-warning">
+            <p>After pulling new changes from the repository, always run <span class="code-inline">pnpm install</span> before restarting the bot. This ensures any new dependencies are installed.</p>
+          </div>
+          <div class="code-block">git pull
+pnpm install
+pnpm start</div>
+
+          <h3>Troubleshooting</h3>
+
+          <h4>"Missing Access" Error</h4>
+          <p>The bot doesn't have permission to send messages in the channel. Right-click the channel > <strong>Edit Channel</strong> > <strong>Permissions</strong> > add the bot and grant <strong>Send Messages</strong>, <strong>Embed Links</strong>, <strong>Attach Files</strong>, and <strong>Read Message History</strong>.</p>
+
+          <h4>"Cannot find module '@napi-rs/canvas'"</h4>
+          <p>Run <span class="code-inline">pnpm install</span> to install the native canvas dependency. It ships pre-built binaries for macOS, Linux, and Windows.</p>
+
+          <h4>Slash Commands Not Appearing</h4>
+          <p>Run <span class="code-inline">pnpm run deploy</span> to register commands. If using a <span class="code-inline">GUILD_ID</span>, commands appear instantly. Without it, global commands can take up to 1 hour to propagate.</p>
+
+          <h4>Bot Not Receiving DMs</h4>
+          <p>Players need to have DMs enabled for the server. In Discord: right-click the server icon > <strong>Privacy Settings</strong> > enable <strong>Direct Messages</strong>.</p>
+
+          <h4>Settings Dashboard Login Fails</h4>
+          <ul>
+            <li>Verify <span class="code-inline">CLIENT_SECRET</span> is correct (reset it in the Developer Portal if unsure)</li>
+            <li>Verify the redirect URI in <span class="code-inline">.env</span> exactly matches what's configured in the Developer Portal</li>
+            <li>Verify you have the admin role assigned to your Discord account</li>
+            <li>Verify <span class="code-inline">GUILD_ID</span> matches the server where you have the role</li>
+          </ul>
+
+          <div class="panel panel-accent">
+            <h4>Need Help?</h4>
+            <p>If you run into issues not covered here, please <a href="https://github.com/AlannaBurke/halt-discord-game/issues" target="_blank" style="color: var(--accent);">open an issue on GitHub</a> with details about the error and your setup.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================================
     // API Functions
     // ============================================================
     async function loadCards() {
-      const res = await fetch('/api/cards');
-      const data = await res.json();
-      cards = data.cards;
+      try {
+        const res = await fetch('/api/cards');
+        const data = await res.json();
+        cards = data.cards;
+      } catch (e) {
+        cards = [];
+      }
     }
 
     async function uploadCard(cardId, input) {
@@ -486,9 +1067,8 @@
 
         if (data.success) {
           showToast(data.message, 'success');
-          // Refresh cards
           await loadCards();
-          renderDashboard();
+          renderCardsPage();
         } else {
           showToast(data.error || 'Upload failed', 'error');
         }
@@ -516,7 +1096,7 @@
         if (data.success) {
           showToast(data.message, 'success');
           await loadCards();
-          renderDashboard();
+          renderCardsPage();
         } else {
           showToast(data.error || 'Reset failed', 'error');
         }
