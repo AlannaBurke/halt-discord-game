@@ -6,15 +6,20 @@ const {
 const { CARD_INFO } = require('../utils/constants');
 
 /**
- * Create lobby action buttons (Join + Start)
+ * Create lobby action buttons (Join + Start + Computer Player toggle)
  * @param {string} channelId - Used as part of custom ID
+ * @param {boolean} computerEnabled - Whether the computer player is currently enabled
  */
-function createLobbyButtons(channelId) {
+function createLobbyButtons(channelId, computerEnabled = false) {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`join_game_${channelId}`)
       .setLabel('🎮 Join Game')
       .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId(`toggle_computer_${channelId}`)
+      .setLabel(computerEnabled ? '🤖 Computer: ON' : '🤖 Computer: OFF')
+      .setStyle(computerEnabled ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId(`start_game_${channelId}`)
       .setLabel('▶️ Start Game')

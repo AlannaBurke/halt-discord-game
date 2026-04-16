@@ -9,15 +9,22 @@ const ASSETS_DIR = path.join(__dirname, '../../assets/cards');
  */
 function createLobbyEmbed(game) {
   const playerList = Array.from(game.players.values())
-    .map((p, i) => `${i === 0 ? '👑' : '🎮'} ${p.username}`)
+    .map((p, i) => {
+      if (game.isComputerPlayer(p.userId)) return `🤖 ${p.username}`;
+      return `${i === 0 ? '👑' : '🎮'} ${p.username}`;
+    })
     .join('\n');
+
+  const computerNote = game.computerEnabled
+    ? '\n\n🤖 **Computer player enabled** — HALTbot will pick cards randomly.'
+    : '';
 
   return new EmbedBuilder()
     .setTitle('🐾 HALT Go — Lobby')
     .setDescription(
       `**${Array.from(game.players.values())[0].username}** is hosting a game!\n\n` +
       `Click **Join Game** to play!\n` +
-      `The host can click **Start Game** when everyone is ready.`
+      `The host can click **Start Game** when everyone is ready.${computerNote}`
     )
     .addFields(
       {

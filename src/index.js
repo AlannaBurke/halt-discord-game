@@ -123,7 +123,7 @@ async function handleGameCommand(interaction) {
 
   // Send lobby embed
   const embed = createLobbyEmbed(game);
-  const buttons = createLobbyButtons(channelId);
+  const buttons = createLobbyButtons(channelId, game.computerEnabled);
 
   await interaction.reply({
     embeds: [embed],
@@ -167,6 +167,8 @@ async function handleButtonInteraction(interaction) {
 
   if (customId.startsWith('join_game_')) {
     await handleJoinButton(interaction);
+  } else if (customId.startsWith('toggle_computer_')) {
+    await handleToggleComputerButton(interaction);
   } else if (customId.startsWith('start_game_')) {
     await handleStartButton(interaction);
   } else if (customId.startsWith('select_card_')) {
@@ -191,7 +193,35 @@ async function handleJoinButton(interaction) {
   // Update the lobby embed
   const game = result.game;
   const embed = createLobbyEmbed(game);
-  const buttons = createLobbyButtons(channelId);
+  const buttons = createLobbyButtons(channelId, game.computerEnabled);
+
+  await interaction.update({
+    embeds: [embed],
+    components: [buttons],
+  });
+}
+
+// ============================================================
+// Toggle Computer Player Button
+// ============================================================
+async function handleToggleComputerButton(interaction) {
+  const channelId = interaction.customId.replace('toggle_computer_', '');
+  const userId = interaction.user.id;
+
+  const game = gameManager.getGame(channelId);
+  if (!game) {
+    return interaction.reply({ content: '❌ Game not found!', flags: MessageFlags.Ephemeral });
+  }
+
+  const result = game.toggleComputer(userId);
+
+  if (!result.success) {
+    return interaction.reply({ content: `❌ ${result.message}`, flags: MessageFlags.Ephemeral });
+  }
+
+  // Update the lobby embed with new player list and button state
+  const embed = createLobbyEmbed(game);
+  const buttons = createLobbyButtons(channelId, game.computerEnabled);
 
   await interaction.update({
     embeds: [embed],
@@ -321,8 +351,11 @@ function setupGameEvents(game) {
       const channelEmbed = createPhaseAnnouncementEmbed(round, phase, totalPhases);
       await channel.send({ embeds: [channelEmbed] });
 
-      // Send DMs to each player with card images
+      // Send DMs to each player with card images (skip computer player)
       for (const player of game.players.values()) {
+        // Skip the computer player — it auto-selects in Game.js
+        if (game.isComputerPlayer(player.userId)) continue;
+
         try {
           // Get or create DM channel
           const user = await client.users.fetch(player.userId);
@@ -463,17 +496,19 @@ function setupGameEvents(game) {
               files: [attachment],
             });
 
-            // Also DM the player their collection
-            try {
-              const user = await client.users.fetch(player.userId);
-              const dmChannel = player.dmChannel || await user.createDM();
-              const dmAttachment = new AttachmentBuilder(galleryPath, { name: `${player.username}_collection.png` });
-              await dmChannel.send({
-                content: `🎴 **Your HALT Go Collection!**\nYou collected **${player.allCards.length} cards** and scored **${playerResult.totalScore} points**!\nSave this image as a keepsake! 🐾`,
-                files: [dmAttachment],
-              });
-            } catch (dmError) {
-              console.error(`Failed to DM collection to ${player.username}:`, dmError.message);
+            // Also DM the player their collection (skip computer player)
+            if (!game.isComputerPlayer(player.userId)) {
+              try {
+                const user = await client.users.fetch(player.userId);
+                const dmChannel = player.dmChannel || await user.createDM();
+                const dmAttachment = new AttachmentBuilder(galleryPath, { name: `${player.username}_collection.png` });
+                await dmChannel.send({
+                  content: `🎴 **Your HALT Go Collection!**\nYou collected **${player.allCards.length} cards** and scored **${playerResult.totalScore} points**!\nSave this image as a keepsake! 🐾`,
+                  files: [dmAttachment],
+                });
+              } catch (dmError) {
+                console.error(`Failed to DM collection to ${player.username}:`, dmError.message);
+              }
             }
           }
         } catch (galleryError) {

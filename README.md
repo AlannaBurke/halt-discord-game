@@ -104,11 +104,12 @@ pnpm start
 
 1. Someone uses `/game` to create a lobby
 2. Other players click **Join Game**
-3. The host clicks **Start Game** when everyone is ready
-4. Each phase, check your **DMs** for card choices
-5. Click a button to pick your card
-6. After all 7 phases, round scores are shown
-7. After 3 rounds, final scores (including Sanctuary Cat bonuses) determine the winner!
+3. (Optional) The host can click **🤖 Computer: OFF** to toggle a computer opponent (HALTbot) that picks cards randomly — great for testing or solo play!
+4. The host clicks **Start Game** when everyone is ready
+5. Each phase, check your **DMs** for card choices
+6. Click a button to pick your card
+7. After all 7 phases, round scores are shown
+8. After 3 rounds, final scores (including Sanctuary Cat bonuses) determine the winner!
 
 ## Project Structure
 

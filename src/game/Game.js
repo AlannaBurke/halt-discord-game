@@ -35,6 +35,11 @@ class Game extends EventEmitter {
     this.players = new Map();
     this.addPlayer(hostId, hostUsername);
 
+    // Computer player
+    this.computerEnabled = false;
+    this.computerPlayerId = 'computer_player';
+    this.computerPlayerName = '🤖 HALTbot';
+
     // Phase timer
     this.phaseTimer = null;
     this.phaseTimerExpiry = null;
@@ -69,6 +74,43 @@ class Game extends EventEmitter {
    * @param {string} userId - Must be the host
    * @returns {{ success: boolean, message: string }}
    */
+  /**
+   * Toggle the computer player on/off
+   * @param {string} userId - Must be the host
+   * @returns {{ success: boolean, message: string, enabled: boolean }}
+   */
+  toggleComputer(userId) {
+    if (userId !== this.hostId) {
+      return { success: false, message: 'Only the host can toggle the computer player!' };
+    }
+    if (this.state !== GameState.LOBBY) {
+      return { success: false, message: 'Cannot change settings after the game has started!' };
+    }
+
+    this.computerEnabled = !this.computerEnabled;
+
+    if (this.computerEnabled) {
+      // Add computer player
+      if (!this.players.has(this.computerPlayerId)) {
+        this.players.set(this.computerPlayerId, new Player(this.computerPlayerId, this.computerPlayerName));
+      }
+    } else {
+      // Remove computer player
+      this.players.delete(this.computerPlayerId);
+    }
+
+    return { success: true, message: this.computerEnabled ? 'Computer player added!' : 'Computer player removed!', enabled: this.computerEnabled };
+  }
+
+  /**
+   * Check if a player is the computer
+   * @param {string} userId
+   * @returns {boolean}
+   */
+  isComputerPlayer(userId) {
+    return userId === this.computerPlayerId;
+  }
+
   startGame(userId) {
     if (userId !== this.hostId) {
       return { success: false, message: 'Only the host can start the game!' };
@@ -126,6 +168,18 @@ class Game extends EventEmitter {
       phase: this.currentPhase,
       totalPhases: GAME_CONFIG.PHASES_PER_ROUND,
     });
+
+    // Auto-select for computer player after a short random delay
+    if (this.computerEnabled && this.players.has(this.computerPlayerId)) {
+      const delay = 1000 + Math.floor(Math.random() * 3000); // 1-4 seconds
+      setTimeout(() => {
+        const computer = this.players.get(this.computerPlayerId);
+        if (computer && !computer.hasSelected && this.state === GameState.PLAYING) {
+          const randomIndex = Math.floor(Math.random() * computer.currentChoices.length);
+          this.selectCard(this.computerPlayerId, randomIndex);
+        }
+      }, delay);
+    }
   }
 
   /**
