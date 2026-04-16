@@ -36,6 +36,14 @@ Each round has 7 phases with shrinking card selections:
 | 6 | 3 cards |
 | 7 | 2 cards |
 
+## Requirements
+
+- **Node.js** v18 or later
+- **pnpm** (recommended) or npm
+- A Discord bot token (see setup below)
+
+This project uses **@napi-rs/canvas** for rendering card images in Discord. It is a native module that ships pre-built binaries for macOS (Intel & Apple Silicon), Linux, and Windows — no extra system dependencies needed.
+
 ## Setup
 
 ### 1. Create a Discord Bot
@@ -59,7 +67,7 @@ Each round has 7 phases with shrinking card selections:
 git clone https://github.com/AlannaBurke/halt-discord-game.git
 cd halt-discord-game
 
-# Install dependencies
+# Install dependencies (includes @napi-rs/canvas for card image rendering)
 pnpm install
 
 # Copy and edit the environment file
@@ -118,18 +126,33 @@ halt-discord-game/
 │   │   └── Scoring.js        # All scoring logic
 │   ├── ui/
 │   │   ├── embeds.js         # Discord embed builders
-│   │   └── buttons.js        # Button component builders
+│   │   ├── buttons.js        # Button component builders
+│   │   └── cardRenderer.js   # Card image compositing (hand, selection, gallery)
 │   └── utils/
 │       └── constants.js      # Card types, scoring tables, config
 ├── assets/
-│   └── cards/                # Adorable kawaii card art (9 cards)
+│   └── cards/
+│       ├── *.png             # Original kawaii card art (9 cards)
+│       └── discord/          # Discord-sized card images with frames & scoring text
 ├── test/
 │   ├── test-engine.js        # Core engine tests
 │   └── test-scoring-edge-cases.js  # Comprehensive scoring tests
+├── scripts/
+│   └── generate-cards.py     # Card image generation script (Python/Pillow)
 ├── .env.example
 ├── package.json
 └── README.md
 ```
+
+## Updating After Pulling Changes
+
+After pulling new changes, always run:
+
+```bash
+pnpm install
+```
+
+This ensures any new or updated dependencies (like `@napi-rs/canvas`) are installed before starting the bot.
 
 ## License
 
