@@ -557,7 +557,7 @@ if (process.env.SETTINGS_ENABLED === 'true') {
     sessionSecret: process.env.SESSION_SECRET || 'halt-go-secret-change-me',
   });
 
-  settingsApp.listen(settingsPort, () => {
+  settingsApp.listen(settingsPort, '0.0.0.0', () => {
     console.log(`\u2699\ufe0f  Settings dashboard running at http://localhost:${settingsPort}`);
   });
 } else {
