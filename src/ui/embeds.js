@@ -204,7 +204,7 @@ function createRoundScoreEmbed(round, results, getEmoji) {
     if (b.guinea_pig.points > 0) parts.push(`${re(CARD_TYPES.GUINEA_PIG)} Guinea Pigs: +${b.guinea_pig.points}${b.guinea_pig.multiplied > 0 ? ' (hay!)' : ''}`);
     if (b.rabbit.points > 0) parts.push(`${re(CARD_TYPES.RABBIT)} Rabbits: +${b.rabbit.points}${b.rabbit.multiplied > 0 ? ' (hay!)' : ''}`);
     if (b.chinchilla.points > 0) parts.push(`${re(CARD_TYPES.CHINCHILLA)} Chinchillas: +${b.chinchilla.points}${b.chinchilla.multiplied > 0 ? ' (hay!)' : ''}`);
-    if (b.degus.points > 0) parts.push(`${re(CARD_TYPES.DEGUS)} Degus: +${b.degus.points}`);
+    if (b.degus.points > 0) parts.push(`${re(CARD_TYPES.DEGUS)} Degu: +${b.degus.points}`);
     if (b.gerbils.points > 0) parts.push(`${re(CARD_TYPES.GERBIL)} Gerbils: +${b.gerbils.points}`);
     return `**${r.username}**: ${parts.join(', ') || 'No scoring cards'}`;
   }).join('\n');
@@ -330,8 +330,8 @@ function createHelpEmbed(getEmoji) {
         inline: true,
       },
       {
-        name: `${re(CARD_TYPES.DEGUS)} Degus — Set Bonus`,
-        value: '3 Degus = 10 pts, else 0',
+        name: `${re(CARD_TYPES.DEGUS)} Degu — Set Bonus`,
+        value: '3 Degu = 10 pts, else 0',
         inline: true,
       },
       {

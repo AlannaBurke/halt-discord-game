@@ -46,7 +46,7 @@ const CARD_DEFS = {
   guinea_pig: { name: 'Guinea Pig', scoring: ['3 points each'], color: '#D4A574', border: '#B08050' },
   rabbit: { name: 'Rabbit', scoring: ['2 points each'], color: '#D4B8E8', border: '#A888C8' },
   chinchilla: { name: 'Chinchilla', scoring: ['1 point each'], color: '#C8B8D8', border: '#9888B8' },
-  degus: { name: 'Degus', scoring: ['Set of 3 = 10 pts', 'Otherwise 0'], color: '#C8B090', border: '#A89070' },
+  degus: { name: 'Degu', scoring: ['Set of 3 = 10 pts', 'Otherwise 0'], color: '#C8B090', border: '#A89070' },
   sanctuary_cat: { name: 'Sanctuary Cat', scoring: ['End: Most +6', 'Least -6'], color: '#F0D8A0', border: '#D0B870' },
 };
 

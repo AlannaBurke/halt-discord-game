@@ -23,7 +23,7 @@ halt-discord-game/
 │   │   ├── Game.js               # Single game instance (lobby, rounds, phases, computer player)
 │   │   ├── Player.js             # Player state (cards, scores, allCards tracking)
 │   │   ├── CardGenerator.js      # Weighted random card generation
-│   │   └── Scoring.js            # All scoring logic (rats, gerbils, hay, degus, cats)
+│   │   └── Scoring.js            # All scoring logic (rats, gerbils, hay, degu, cats)
 │   ├── ui/
 │   │   ├── embeds.js             # Discord embed builders (10 embed types)
 │   │   ├── buttons.js            # Button component builders (lobby, selection, computer toggle)

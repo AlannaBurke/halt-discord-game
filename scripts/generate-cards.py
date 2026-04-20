@@ -91,7 +91,7 @@ CARDS = [
     },
     {
         'id': 'degus',
-        'name': 'Degus',
+        'name': 'Degu',
         'scoring': 'Set of 3 = 10 pts\nOtherwise 0',
         'color': '#C8B090',
         'border': '#A89070',

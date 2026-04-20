@@ -27,12 +27,12 @@ Built for [Helping All Little Things (HALT)](https://helpingalllittlethings.org)
 | Guinea Pig | 🐹 | Flat: 3 points each (9 with Hay) |
 | Rabbit | 🐰 | Flat: 2 points each (6 with Hay) |
 | Chinchilla | 🐭 | Flat: 1 point each (3 with Hay) |
-| Degus | 🐿️ | Set bonus: 3 Degus = 10 points, otherwise 0 |
+| Degu | 🐿️ | Set bonus: 3 Degu = 10 points, otherwise 0 |
 | Sanctuary Cat | 🐱 | End-game (after all 3 rounds): Most=+6, Least=-6, tied=split |
 
 ## Scoring Flow
 
-1. **After each round (Phases 1-7 complete)**: Count cards, apply flat points, apply Hay multipliers, score Rat sets, determine Gerbil majority, check Degus sets, update running total, clear round cards.
+1. **After each round (Phases 1-7 complete)**: Count cards, apply flat points, apply Hay multipliers, score Rat sets, determine Gerbil majority, check Degu sets, update running total, clear round cards.
 2. **After Round 3**: Apply Sanctuary Cat end-game bonus/penalty across all 3 rounds combined, then determine the winner.
 
 ## Card Generation
@@ -49,7 +49,7 @@ Built for [Helping All Little Things (HALT)](https://helpingalllittlethings.org)
 | Guinea Pig | 12 | 12% |
 | Rabbit | 14 | 14% |
 | Chinchilla | 14 | 14% |
-| Degus | 10 | 10% |
+| Degu | 10 | 10% |
 | Sanctuary Cat | 8 | 8% |
 
 ## Discord Integration

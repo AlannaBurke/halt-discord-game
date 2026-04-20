@@ -70,9 +70,9 @@ const CARD_INFO = {
     image: 'chinchilla.png',
   },
   [CARD_TYPES.DEGUS]: {
-    name: 'Degus',
+    name: 'Degu',
     emoji: '🐿️',
-    customEmojiName: 'halt_degus',
+    customEmojiName: 'halt_degu',
     description: 'Set of 3 = 10 points, otherwise 0',
     color: '#C8B090',
     image: 'degus.png',

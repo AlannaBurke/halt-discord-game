@@ -124,35 +124,35 @@ console.log('\n=== Hay Multiplier ===');
   assert(r.breakdown.hay.used === 1, 'Only 1 hay used');
 }
 
-console.log('\n=== Degus Set Bonus ===');
+console.log('\n=== Degu Set Bonus ===');
 {
   const p = makePlayer('1', 'Test', []);
   const all = [p];
 
-  // 0 degus = 0
+  // 0 degu = 0
   p.roundCards = [];
   let r = Scoring.calculateRoundScore(p, all);
-  assert(r.breakdown.degus.points === 0, '0 degus = 0 pts');
+  assert(r.breakdown.degus.points === 0, '0 degu = 0 pts');
 
-  // 2 degus = 0 (incomplete set)
+  // 2 degu = 0 (incomplete set)
   p.roundCards = [CARD_TYPES.DEGUS, CARD_TYPES.DEGUS];
   r = Scoring.calculateRoundScore(p, all);
-  assert(r.breakdown.degus.points === 0, '2 degus = 0 pts');
+  assert(r.breakdown.degus.points === 0, '2 degu = 0 pts');
 
-  // 3 degus = 10
+  // 3 degu = 10
   p.roundCards = [CARD_TYPES.DEGUS, CARD_TYPES.DEGUS, CARD_TYPES.DEGUS];
   r = Scoring.calculateRoundScore(p, all);
-  assert(r.breakdown.degus.points === 10, '3 degus = 10 pts');
+  assert(r.breakdown.degus.points === 10, '3 degu = 10 pts');
 
-  // 6 degus = 20 (2 sets)
+  // 6 degu = 20 (2 sets)
   p.roundCards = Array(6).fill(CARD_TYPES.DEGUS);
   r = Scoring.calculateRoundScore(p, all);
-  assert(r.breakdown.degus.points === 20, '6 degus = 20 pts (2 sets)');
+  assert(r.breakdown.degus.points === 20, '6 degu = 20 pts (2 sets)');
 
-  // 7 degus = 20 (2 sets, 1 leftover)
+  // 7 degu = 20 (2 sets, 1 leftover)
   p.roundCards = Array(7).fill(CARD_TYPES.DEGUS);
   r = Scoring.calculateRoundScore(p, all);
-  assert(r.breakdown.degus.points === 20, '7 degus = 20 pts (2 sets + 1 leftover)');
+  assert(r.breakdown.degus.points === 20, '7 degu = 20 pts (2 sets + 1 leftover)');
 }
 
 console.log('\n=== Sanctuary Cat End-Game ===');
@@ -222,7 +222,7 @@ console.log('\n=== Flat Value Cards ===');
 
 console.log('\n=== Combined Scoring ===');
 {
-  // Complex hand: 2 rats, 1 hay, 2 guinea pigs, 1 degus, 1 sanctuary cat
+  // Complex hand: 2 rats, 1 hay, 2 guinea pigs, 1 degu, 1 sanctuary cat
   const p = makePlayer('1', 'Test', [
     CARD_TYPES.RAT, CARD_TYPES.RAT,
     CARD_TYPES.HAY,
@@ -235,7 +235,7 @@ console.log('\n=== Combined Scoring ===');
   const r = Scoring.calculateRoundScore(p, all);
   // Rats: 2 = 3 pts
   // Hay: 1, applied to first guinea pig = 9, second = 3 → total guinea pig = 12
-  // Degus: 1 = 0
+  // Degu: 1 = 0
   // Sanctuary cat: 0 (end game only)
   const expected = 3 + 12 + 0 + 0;
   assert(r.total === expected, `Combined score = ${expected} (got ${r.total})`);

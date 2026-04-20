@@ -32,7 +32,7 @@ const p1 = new Player('user1', 'Alice');
 const p2 = new Player('user2', 'Bob');
 const p3 = new Player('user3', 'Charlie');
 
-// Give Alice: 3 rats, 2 guinea pigs, 1 hay, 1 degus
+// Give Alice: 3 rats, 2 guinea pigs, 1 hay, 1 degu
 p1.roundCards = [
   CARD_TYPES.RAT, CARD_TYPES.RAT, CARD_TYPES.RAT,
   CARD_TYPES.GUINEA_PIG, CARD_TYPES.GUINEA_PIG,
@@ -40,7 +40,7 @@ p1.roundCards = [
   CARD_TYPES.DEGUS,
 ];
 
-// Give Bob: 2 gerbils, 3 degus, 1 rabbit, 1 sanctuary_cat
+// Give Bob: 2 gerbils, 3 degu, 1 rabbit, 1 sanctuary_cat
 p2.roundCards = [
   CARD_TYPES.GERBIL, CARD_TYPES.GERBIL,
   CARD_TYPES.DEGUS, CARD_TYPES.DEGUS, CARD_TYPES.DEGUS,
@@ -69,9 +69,9 @@ for (const player of allPlayers) {
 }
 
 // Expected:
-// Alice: 3 rats = 6, 2 guinea pigs (1 with hay x3 = 9, 1 normal = 3) = 12, 1 degus = 0
+// Alice: 3 rats = 6, 2 guinea pigs (1 with hay x3 = 9, 1 normal = 3) = 12, 1 degu = 0
 //   → Gerbils: 0 (has none) → Total: 18
-// Bob: 2 gerbils = 6 (most), 3 degus = 10, 1 rabbit = 2
+// Bob: 2 gerbils = 6 (most), 3 degu = 10, 1 rabbit = 2
 //   → Total: 18
 // Charlie: 1 gerbil = 3 (second), 2 chinchillas (2 with hay x3 = 6) = 6, 1 rabbit = 2
 //   → Total: 11

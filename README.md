@@ -21,7 +21,7 @@ At the end of the game, every player receives a personalized **collectible galle
 | Guinea Pig | 3 points each (9 with Hay) | Reliable points, excellent Hay target |
 | Rabbit | 2 points each (6 with Hay) | Solid mid-tier value |
 | Chinchilla | 1 point each (3 with Hay) | Common, low value alone |
-| Degus | Set of 3 = 10 points, otherwise 0 | All-or-nothing: commit to 3 or skip |
+| Degu | Set of 3 = 10 points, otherwise 0 | All-or-nothing: commit to 3 or skip |
 | Sanctuary Cat | End-game: Most=+6, Least=-6 | Scored after all 3 rounds combined |
 
 ## Phase Structure
@@ -177,7 +177,7 @@ HALT Go includes a set of custom kawaii emoji images in `assets/emojis/` that yo
 | `guinea_pig.png` | `halt_guineapig` | Guinea Pig |
 | `rabbit.png` | `halt_rabbit` | Rabbit |
 | `chinchilla.png` | `halt_chinchilla` | Chinchilla |
-| `degus.png` | `halt_degus` | Degus |
+| `degus.png` | `halt_degu` | Degu |
 | `sanctuary_cat.png` | `halt_cat` | Sanctuary Cat |
 
 The names must match exactly (they are case-sensitive). After uploading, restart the bot and it will log how many custom emojis it found. If an emoji is missing or misnamed, the bot falls back to the default Unicode emoji for that card.

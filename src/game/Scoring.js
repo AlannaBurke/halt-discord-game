@@ -62,7 +62,7 @@ class Scoring {
       points: 0, // Hay itself doesn't score, it multiplies
     };
 
-    // --- Degus: Set of 3 = 10 points ---
+    // --- Degu: Set of 3 = 10 points ---
     const degusCount = counts[CARD_TYPES.DEGUS] || 0;
     const degusSets = Math.floor(degusCount / 3);
     const degusScore = degusSets * 10;
