@@ -48,12 +48,55 @@ const client = new Client({
 // Game manager instance
 const gameManager = new GameManager();
 
+// Custom emoji cache: maps customEmojiName -> Discord emoji string like <:halt_rat:123456>
+const customEmojiCache = new Map();
+
+/**
+ * Get the display emoji for a card type.
+ * Returns the custom server emoji if available, otherwise falls back to the Unicode emoji.
+ * @param {string} cardType - Card type key from CARD_TYPES
+ * @returns {string}
+ */
+function getEmoji(cardType) {
+  const info = CARD_INFO[cardType];
+  if (!info) return '❓';
+  if (info.customEmojiName && customEmojiCache.has(info.customEmojiName)) {
+    return customEmojiCache.get(info.customEmojiName);
+  }
+  return info.emoji;
+}
+
+/**
+ * Load custom emojis from the guild on startup.
+ * Matches emoji names against customEmojiName fields in CARD_INFO.
+ */
+function loadCustomEmojis(guild) {
+  let found = 0;
+  for (const [, info] of Object.entries(CARD_INFO)) {
+    if (!info.customEmojiName) continue;
+    const guildEmoji = guild.emojis.cache.find(e => e.name === info.customEmojiName);
+    if (guildEmoji) {
+      customEmojiCache.set(info.customEmojiName, `<:${guildEmoji.name}:${guildEmoji.id}>`);
+      found++;
+    }
+  }
+  return found;
+}
+
 // ============================================================
 // Bot Ready
 // ============================================================
 client.once(Events.ClientReady, (c) => {
   console.log(`✅ Logged in as ${c.user.tag}`);
   console.log(`📊 Serving ${c.guilds.cache.size} guilds`);
+
+  // Load custom emojis from all guilds
+  for (const guild of c.guilds.cache.values()) {
+    const count = loadCustomEmojis(guild);
+    if (count > 0) {
+      console.log(`🎨 Loaded ${count} custom emojis from ${guild.name}`);
+    }
+  }
 });
 
 // ============================================================
@@ -135,7 +178,7 @@ async function handleGameCommand(interaction) {
 // /help — Show rules
 // ============================================================
 async function handleHelpCommand(interaction) {
-  const embed = createHelpEmbed();
+  const embed = createHelpEmbed(getEmoji);
   await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 }
 
@@ -291,20 +334,22 @@ async function handleCardSelectButton(interaction) {
     result.card,
     player,
     game.currentRound,
-    game.currentPhase
+    game.currentPhase,
+    getEmoji
   );
   const disabledButtons = createDisabledCardButtons(
     player.currentChoices,
     cardIndex,
     channelId,
-    phase
+    phase,
+    getEmoji
   );
 
   // If Pregnant Hamster was selected, also show the resolution
   const embeds = [selectedEmbed];
   if (result.card === CARD_TYPES.PREGNANT_HAMSTER) {
     const lastTwo = player.roundCards.slice(-2);
-    embeds.push(createPregnantHamsterEmbed(lastTwo));
+    embeds.push(createPregnantHamsterEmbed(lastTwo, getEmoji));
   }
 
   await interaction.update({
@@ -370,11 +415,12 @@ function setupGameEvents(game) {
             selectionFilename
           );
 
-          const embed = createCardSelectionEmbed(player, round, phase);
+          const embed = createCardSelectionEmbed(player, round, phase, getEmoji);
           const buttons = createCardSelectionButtons(
             player.currentChoices,
             game.channelId,
-            phase
+            phase,
+            getEmoji
           );
 
           // Build message with card image
@@ -456,7 +502,7 @@ function setupGameEvents(game) {
     try {
       const channel = await getChannel(game._discordChannelId);
       if (!channel) return;
-      const embed = createRoundScoreEmbed(round, results);
+      const embed = createRoundScoreEmbed(round, results, getEmoji);
       await channel.send({ embeds: [embed] });
     } catch (error) {
       console.error('Error in roundEnd handler:', error.message);
@@ -470,7 +516,7 @@ function setupGameEvents(game) {
       if (!channel) return;
 
       // Send the main results embed
-      const embed = createGameEndEmbed(results);
+      const embed = createGameEndEmbed(results, getEmoji);
       await channel.send({ embeds: [embed] });
 
       // Generate and send collectible galleries for each player

@@ -5,6 +5,16 @@ const path = require('path');
 const ASSETS_DIR = path.join(__dirname, '../../assets/cards');
 
 /**
+ * Helper: resolve emoji for a card type.
+ * If a getEmoji function is provided, use it; otherwise fall back to CARD_INFO.emoji.
+ */
+function resolveEmoji(cardType, getEmoji) {
+  if (getEmoji) return getEmoji(cardType);
+  const info = CARD_INFO[cardType];
+  return info ? info.emoji : '❓';
+}
+
+/**
  * Create the lobby embed showing game info and players
  */
 function createLobbyEmbed(game) {
@@ -77,14 +87,19 @@ function createPhaseAnnouncementEmbed(round, phase, totalPhases) {
 
 /**
  * Create the card selection DM embed for a player
+ * @param {object} player
+ * @param {number} round
+ * @param {number} phase
+ * @param {Function} [getEmoji] - Optional custom emoji resolver
  */
-function createCardSelectionEmbed(player, round, phase) {
+function createCardSelectionEmbed(player, round, phase, getEmoji) {
   const cardsShown = player.currentChoices.length;
 
   // Build card list with emojis and descriptions
   const cardList = player.currentChoices.map((cardType, i) => {
     const info = CARD_INFO[cardType];
-    return `**${i + 1}.** ${info.emoji} **${info.name}** — ${info.description}`;
+    const emoji = resolveEmoji(cardType, getEmoji);
+    return `**${i + 1}.** ${emoji} **${info.name}** — ${info.description}`;
   }).join('\n');
 
   // Show current collection
@@ -92,7 +107,8 @@ function createCardSelectionEmbed(player, round, phase) {
   const collection = Object.entries(counts)
     .map(([type, count]) => {
       const info = CARD_INFO[type];
-      return `${info.emoji} ${info.name} ×${count}`;
+      const emoji = resolveEmoji(type, getEmoji);
+      return `${emoji} ${info.name} ×${count}`;
     })
     .join(' | ') || 'Empty';
 
@@ -111,22 +127,29 @@ function createCardSelectionEmbed(player, round, phase) {
 
 /**
  * Create embed showing what card was selected
+ * @param {string} cardType
+ * @param {object} player
+ * @param {number} round
+ * @param {number} phase
+ * @param {Function} [getEmoji] - Optional custom emoji resolver
  */
-function createCardSelectedEmbed(cardType, player, round, phase) {
+function createCardSelectedEmbed(cardType, player, round, phase, getEmoji) {
   const info = CARD_INFO[cardType];
+  const emoji = resolveEmoji(cardType, getEmoji);
 
   const counts = player.getCardCounts();
   const collection = Object.entries(counts)
     .map(([type, count]) => {
       const cInfo = CARD_INFO[type];
-      return `${cInfo.emoji} ${cInfo.name} ×${count}`;
+      const cEmoji = resolveEmoji(type, getEmoji);
+      return `${cEmoji} ${cInfo.name} ×${count}`;
     })
     .join(' | ') || 'Empty';
 
   return new EmbedBuilder()
     .setTitle(`✅ Card Selected!`)
     .setDescription(
-      `You picked: ${info.emoji} **${info.name}**\n\n` +
+      `You picked: ${emoji} **${info.name}**\n\n` +
       `*${info.description}*\n\n` +
       `Waiting for other players...`
     )
@@ -140,11 +163,14 @@ function createCardSelectedEmbed(cardType, player, round, phase) {
 
 /**
  * Create the Pregnant Hamster resolution embed
+ * @param {string[]} newCards
+ * @param {Function} [getEmoji] - Optional custom emoji resolver
  */
-function createPregnantHamsterEmbed(newCards) {
+function createPregnantHamsterEmbed(newCards, getEmoji) {
   const cardNames = newCards.map(c => {
     const info = CARD_INFO[c];
-    return `${info.emoji} **${info.name}**`;
+    const emoji = resolveEmoji(c, getEmoji);
+    return `${emoji} **${info.name}**`;
   }).join(' and ');
 
   return new EmbedBuilder()
@@ -158,8 +184,13 @@ function createPregnantHamsterEmbed(newCards) {
 
 /**
  * Create the round scoring embed
+ * @param {number} round
+ * @param {Array} results
+ * @param {Function} [getEmoji] - Optional custom emoji resolver
  */
-function createRoundScoreEmbed(round, results) {
+function createRoundScoreEmbed(round, results, getEmoji) {
+  const re = (type) => resolveEmoji(type, getEmoji);
+
   const scoreBoard = results.map((r, i) => {
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▫️';
     return `${medal} **${r.username}** — Round: **+${r.roundScore}** | Total: **${r.totalScore}**`;
@@ -169,12 +200,12 @@ function createRoundScoreEmbed(round, results) {
   const breakdownLines = results.map(r => {
     const parts = [];
     const b = r.breakdown;
-    if (b.rats.points > 0) parts.push(`🐀 Rats: +${b.rats.points}`);
-    if (b.guinea_pig.points > 0) parts.push(`🐹 Guinea Pigs: +${b.guinea_pig.points}${b.guinea_pig.multiplied > 0 ? ' (hay!)' : ''}`);
-    if (b.rabbit.points > 0) parts.push(`🐰 Rabbits: +${b.rabbit.points}${b.rabbit.multiplied > 0 ? ' (hay!)' : ''}`);
-    if (b.chinchilla.points > 0) parts.push(`🐭 Chinchillas: +${b.chinchilla.points}${b.chinchilla.multiplied > 0 ? ' (hay!)' : ''}`);
-    if (b.degus.points > 0) parts.push(`🐿️ Degus: +${b.degus.points}`);
-    if (b.gerbils.points > 0) parts.push(`🐹 Gerbils: +${b.gerbils.points}`);
+    if (b.rats.points > 0) parts.push(`${re(CARD_TYPES.RAT)} Rats: +${b.rats.points}`);
+    if (b.guinea_pig.points > 0) parts.push(`${re(CARD_TYPES.GUINEA_PIG)} Guinea Pigs: +${b.guinea_pig.points}${b.guinea_pig.multiplied > 0 ? ' (hay!)' : ''}`);
+    if (b.rabbit.points > 0) parts.push(`${re(CARD_TYPES.RABBIT)} Rabbits: +${b.rabbit.points}${b.rabbit.multiplied > 0 ? ' (hay!)' : ''}`);
+    if (b.chinchilla.points > 0) parts.push(`${re(CARD_TYPES.CHINCHILLA)} Chinchillas: +${b.chinchilla.points}${b.chinchilla.multiplied > 0 ? ' (hay!)' : ''}`);
+    if (b.degus.points > 0) parts.push(`${re(CARD_TYPES.DEGUS)} Degus: +${b.degus.points}`);
+    if (b.gerbils.points > 0) parts.push(`${re(CARD_TYPES.GERBIL)} Gerbils: +${b.gerbils.points}`);
     return `**${r.username}**: ${parts.join(', ') || 'No scoring cards'}`;
   }).join('\n');
 
@@ -191,14 +222,17 @@ function createRoundScoreEmbed(round, results) {
 
 /**
  * Create the final game results embed
+ * @param {Array} results
+ * @param {Function} [getEmoji] - Optional custom emoji resolver
  */
-function createGameEndEmbed(results) {
+function createGameEndEmbed(results, getEmoji) {
+  const catEmoji = resolveEmoji(CARD_TYPES.SANCTUARY_CAT, getEmoji);
   const winner = results[0];
 
   const scoreBoard = results.map((r, i) => {
     const medal = i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▫️';
     const catInfo = r.catBonus !== 0
-      ? ` (🐱 ${r.catBonus > 0 ? '+' : ''}${r.catBonus})`
+      ? ` (${catEmoji} ${r.catBonus > 0 ? '+' : ''}${r.catBonus})`
       : '';
     return `${medal} **${r.username}** — **${r.totalScore} points**${catInfo}`;
   }).join('\n');
@@ -206,7 +240,7 @@ function createGameEndEmbed(results) {
   // Round-by-round breakdown
   const roundBreakdown = results.map(r => {
     const rounds = r.roundScores.map((rs, i) => `R${i + 1}: ${rs.score}`).join(' | ');
-    const catStr = r.catBonus !== 0 ? ` | 🐱: ${r.catBonus > 0 ? '+' : ''}${r.catBonus}` : '';
+    const catStr = r.catBonus !== 0 ? ` | ${catEmoji}: ${r.catBonus > 0 ? '+' : ''}${r.catBonus}` : '';
     return `**${r.username}**: ${rounds}${catStr}`;
   }).join('\n');
 
@@ -222,7 +256,7 @@ function createGameEndEmbed(results) {
         value: roundBreakdown,
       },
       {
-        name: '🐱 Sanctuary Cats',
+        name: `${catEmoji} Sanctuary Cats`,
         value: results.map(r =>
           `**${r.username}**: ${r.sanctuaryCats} cats (${r.catBonus > 0 ? '+' : ''}${r.catBonus} pts)`
         ).join('\n'),
@@ -247,8 +281,11 @@ function createWaitingEmbed(waitingPlayers) {
 
 /**
  * Create help/rules embed
+ * @param {Function} [getEmoji] - Optional custom emoji resolver
  */
-function createHelpEmbed() {
+function createHelpEmbed(getEmoji) {
+  const re = (type) => resolveEmoji(type, getEmoji);
+
   return new EmbedBuilder()
     .setTitle('🐾 HALT Go — How to Play')
     .setDescription(
@@ -258,48 +295,48 @@ function createHelpEmbed() {
     )
     .addFields(
       {
-        name: '🐀 Rats — Scaling Set',
-        value: '1→1, 2→3, 3→6, 4→10, 5+→15 pts',
+        name: `${re(CARD_TYPES.RAT)} Rats — Scaling Set`,
+        value: '1=1, 2=3, 3=6, 4=10, 5+=15 pts',
         inline: true,
       },
       {
-        name: '🐹 Gerbils — Majority',
-        value: 'Most→+6, 2nd→+3 pts',
+        name: `${re(CARD_TYPES.GERBIL)} Gerbils — Majority`,
+        value: 'Most=+6, 2nd=+3 pts',
         inline: true,
       },
       {
-        name: '🤰 Pregnant Hamster',
+        name: `${re(CARD_TYPES.PREGNANT_HAMSTER)} Pregnant Hamster`,
         value: 'Swap for 2 random cards!',
         inline: true,
       },
       {
-        name: '🌾 Hay — Multiplier',
+        name: `${re(CARD_TYPES.HAY)} Hay — Multiplier`,
         value: 'Triples next Guinea Pig, Rabbit, or Chinchilla',
         inline: true,
       },
       {
-        name: '🐹 Guinea Pig',
+        name: `${re(CARD_TYPES.GUINEA_PIG)} Guinea Pig`,
         value: '3 points each',
         inline: true,
       },
       {
-        name: '🐰 Rabbit',
+        name: `${re(CARD_TYPES.RABBIT)} Rabbit`,
         value: '2 points each',
         inline: true,
       },
       {
-        name: '🐭 Chinchilla',
+        name: `${re(CARD_TYPES.CHINCHILLA)} Chinchilla`,
         value: '1 point each',
         inline: true,
       },
       {
-        name: '🐿️ Degus — Set Bonus',
+        name: `${re(CARD_TYPES.DEGUS)} Degus — Set Bonus`,
         value: '3 Degus = 10 pts, else 0',
         inline: true,
       },
       {
-        name: '🐱 Sanctuary Cat',
-        value: 'End-game: Most→+6, Least→-6',
+        name: `${re(CARD_TYPES.SANCTUARY_CAT)} Sanctuary Cat`,
+        value: 'End-game: Most=+6, Least=-6',
         inline: true,
       }
     )

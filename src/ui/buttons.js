@@ -14,15 +14,15 @@ function createLobbyButtons(channelId, computerEnabled = false) {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`join_game_${channelId}`)
-      .setLabel('🎮 Join Game')
+      .setLabel('Join Game')
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId(`toggle_computer_${channelId}`)
-      .setLabel(computerEnabled ? '🤖 Computer: ON' : '🤖 Computer: OFF')
+      .setLabel(computerEnabled ? 'Computer: ON' : 'Computer: OFF')
       .setStyle(computerEnabled ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId(`start_game_${channelId}`)
-      .setLabel('▶️ Start Game')
+      .setLabel('Start Game')
       .setStyle(ButtonStyle.Success),
   );
 }
@@ -32,8 +32,9 @@ function createLobbyButtons(channelId, computerEnabled = false) {
  * @param {string[]} cards - Array of card types
  * @param {string} gameChannelId - Channel ID of the game
  * @param {number} phase - Current phase number
+ * @param {Function} [getEmoji] - Optional function to resolve custom emojis: (cardType) => emojiString
  */
-function createCardSelectionButtons(cards, gameChannelId, phase) {
+function createCardSelectionButtons(cards, gameChannelId, phase, getEmoji) {
   // Discord allows max 5 buttons per row, so we may need multiple rows
   const rows = [];
   let currentRow = new ActionRowBuilder();
@@ -41,9 +42,10 @@ function createCardSelectionButtons(cards, gameChannelId, phase) {
 
   for (let i = 0; i < cards.length; i++) {
     const info = CARD_INFO[cards[i]];
+    const emoji = getEmoji ? getEmoji(cards[i]) : info.emoji;
     const button = new ButtonBuilder()
       .setCustomId(`select_card_${gameChannelId}_${phase}_${i}`)
-      .setLabel(`${info.emoji} ${info.name}`)
+      .setLabel(`${emoji} ${info.name}`)
       .setStyle(ButtonStyle.Secondary);
 
     currentRow.addComponents(button);
@@ -65,18 +67,20 @@ function createCardSelectionButtons(cards, gameChannelId, phase) {
  * @param {number} selectedIndex - Index of the selected card
  * @param {string} gameChannelId
  * @param {number} phase
+ * @param {Function} [getEmoji] - Optional function to resolve custom emojis: (cardType) => emojiString
  */
-function createDisabledCardButtons(cards, selectedIndex, gameChannelId, phase) {
+function createDisabledCardButtons(cards, selectedIndex, gameChannelId, phase, getEmoji) {
   const rows = [];
   let currentRow = new ActionRowBuilder();
   let buttonsInRow = 0;
 
   for (let i = 0; i < cards.length; i++) {
     const info = CARD_INFO[cards[i]];
+    const emoji = getEmoji ? getEmoji(cards[i]) : info.emoji;
     const isSelected = i === selectedIndex;
     const button = new ButtonBuilder()
       .setCustomId(`select_card_${gameChannelId}_${phase}_${i}`)
-      .setLabel(`${isSelected ? '✅ ' : ''}${info.emoji} ${info.name}`)
+      .setLabel(`${isSelected ? '✅ ' : ''}${emoji} ${info.name}`)
       .setStyle(isSelected ? ButtonStyle.Success : ButtonStyle.Secondary)
       .setDisabled(true);
 

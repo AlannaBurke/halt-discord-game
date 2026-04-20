@@ -158,6 +158,30 @@ Settings dashboard running at http://localhost:3000
 
 **Important:** Players must have DMs enabled for the server. In Discord: right-click the server icon > **Privacy Settings** > enable **Direct Messages**.
 
+## Custom Discord Emojis (Optional)
+
+HALT Go includes a set of custom kawaii emoji images in `assets/emojis/` that you can upload to your Discord server for a more personalized look. When uploaded, the bot automatically detects them and uses them in place of the default Unicode emojis throughout the game.
+
+### How to Upload
+
+1. In Discord, go to **Server Settings** > **Emoji**
+2. Click **Upload Emoji**
+3. Upload each image from `assets/emojis/` and name them exactly as shown below:
+
+| File | Emoji Name | Card |
+|------|------------|------|
+| `rat.png` | `halt_rat` | Rat |
+| `gerbil.png` | `halt_gerbil` | Gerbil |
+| `pregnant_hamster.png` | `halt_hamster` | Pregnant Hamster |
+| `hay.png` | `halt_hay` | Hay |
+| `guinea_pig.png` | `halt_guineapig` | Guinea Pig |
+| `rabbit.png` | `halt_rabbit` | Rabbit |
+| `chinchilla.png` | `halt_chinchilla` | Chinchilla |
+| `degus.png` | `halt_degus` | Degus |
+| `sanctuary_cat.png` | `halt_cat` | Sanctuary Cat |
+
+The names must match exactly (they are case-sensitive). After uploading, restart the bot and it will log how many custom emojis it found. If an emoji is missing or misnamed, the bot falls back to the default Unicode emoji for that card.
+
 ## Settings Dashboard (Optional)
 
 HALT Go includes a web-based settings dashboard with three pages:
@@ -201,10 +225,11 @@ halt-discord-game/
 │   └── utils/
 │       └── constants.js          # Card types, scoring tables, config
 ├── assets/
-│   └── cards/
-│       ├── *.png                 # Original kawaii card art (9 cards)
-│       ├── custom/               # User-uploaded custom card art
-│       └── discord/              # Discord-sized cards with frames & scoring text
+│   ├── cards/
+│   │   ├── *.png                 # Original kawaii card art (9 cards)
+│   │   ├── custom/               # User-uploaded custom card art
+│   │   └── discord/              # Discord-sized cards with frames & scoring text
+│   └── emojis/                   # Custom Discord emoji images (128x128)
 ├── test/
 │   ├── test-engine.js            # Core engine tests
 │   └── test-scoring-edge-cases.js  # 39 comprehensive scoring tests

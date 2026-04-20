@@ -16,6 +16,7 @@ const CARD_INFO = {
   [CARD_TYPES.RAT]: {
     name: 'Rat',
     emoji: '🐀',
+    customEmojiName: 'halt_rat',
     description: 'Scaling set score (1→1, 2→3, 3→6, 4→10, 5+→15)',
     color: '#E8A0BF',
     image: 'rat.png',
@@ -23,6 +24,7 @@ const CARD_INFO = {
   [CARD_TYPES.GERBIL]: {
     name: 'Gerbil',
     emoji: '🐹',
+    customEmojiName: 'halt_gerbil',
     description: 'Majority bonus: Most→+6, 2nd→+3',
     color: '#F5D5A0',
     image: 'gerbil.png',
@@ -30,6 +32,7 @@ const CARD_INFO = {
   [CARD_TYPES.PREGNANT_HAMSTER]: {
     name: 'Pregnant Hamster',
     emoji: '🤰',
+    customEmojiName: 'halt_hamster',
     description: 'Swap this card for 2 new random cards!',
     color: '#B8E8D0',
     image: 'pregnant_hamster.png',
@@ -37,6 +40,7 @@ const CARD_INFO = {
   [CARD_TYPES.HAY]: {
     name: 'Hay',
     emoji: '🌾',
+    customEmojiName: 'halt_hay',
     description: 'Triples the value of next Rabbit, Guinea Pig, or Chinchilla',
     color: '#E8E0A0',
     image: 'hay.png',
@@ -44,6 +48,7 @@ const CARD_INFO = {
   [CARD_TYPES.GUINEA_PIG]: {
     name: 'Guinea Pig',
     emoji: '🐹',
+    customEmojiName: 'halt_guineapig',
     description: '3 points each',
     color: '#D4A574',
     image: 'guinea_pig.png',
@@ -51,6 +56,7 @@ const CARD_INFO = {
   [CARD_TYPES.RABBIT]: {
     name: 'Rabbit',
     emoji: '🐰',
+    customEmojiName: 'halt_rabbit',
     description: '2 points each',
     color: '#D4B8E8',
     image: 'rabbit.png',
@@ -58,6 +64,7 @@ const CARD_INFO = {
   [CARD_TYPES.CHINCHILLA]: {
     name: 'Chinchilla',
     emoji: '🐭',
+    customEmojiName: 'halt_chinchilla',
     description: '1 point each',
     color: '#C8B8D8',
     image: 'chinchilla.png',
@@ -65,6 +72,7 @@ const CARD_INFO = {
   [CARD_TYPES.DEGUS]: {
     name: 'Degus',
     emoji: '🐿️',
+    customEmojiName: 'halt_degus',
     description: 'Set of 3 = 10 points, otherwise 0',
     color: '#C8B090',
     image: 'degus.png',
@@ -72,6 +80,7 @@ const CARD_INFO = {
   [CARD_TYPES.SANCTUARY_CAT]: {
     name: 'Sanctuary Cat',
     emoji: '🐱',
+    customEmojiName: 'halt_cat',
     description: 'End-game: Most→+6, Least→-6',
     color: '#F0D8A0',
     image: 'sanctuary_cat.png',
