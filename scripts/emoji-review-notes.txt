@@ -1,0 +1,15 @@
+Emoji Composite Review Notes
+=============================
+
+Rat (pink): GOOD - circle is correct size, animal centered nicely, transparent bg works
+Gerbil (sky blue): GOOD - looks like a proper gerbil with tufted tail, circle correct
+Chinchilla (teal): GOOD - grey fluffy chinchilla, circle correct. Small red artifact dot in top right from transparency key removal
+Cat (lime green): GOOD - orange tabby with heart, circle correct
+Hay (yellow): PROBLEM - the raw_hay.png had a pink circle baked in from generation, so now it shows a yellow circle with a pink circle inside it. Need to regenerate hay without any circle.
+
+Still need to check: hamster, guinea pig, rabbit, degu
+
+Issues to fix:
+1. Hay has double circle (pink inside yellow) - need clean raw hay image
+2. Chinchilla has tiny red artifact dot - minor, probably invisible at 128px
+3. Some animals that were generated WITH circles baked in (rat, gerbil, hamster, guinea pig, rabbit) now have double circles too potentially
