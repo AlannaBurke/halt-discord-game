@@ -18,7 +18,7 @@ const CARD_INFO = {
     emoji: '🐀',
     customEmojiName: 'halt_rat',
     description: 'Scaling set score (1→1, 2→3, 3→6, 4→10, 5+→15)',
-    color: '#E8A0BF',
+    color: '#FF69B4',
     image: 'rat.png',
   },
   [CARD_TYPES.GERBIL]: {
@@ -26,7 +26,7 @@ const CARD_INFO = {
     emoji: '🐹',
     customEmojiName: 'halt_gerbil',
     description: 'Majority bonus: Most→+6, 2nd→+3',
-    color: '#F5D5A0',
+    color: '#5BC0EB',
     image: 'gerbil.png',
   },
   [CARD_TYPES.PREGNANT_HAMSTER]: {
@@ -34,7 +34,7 @@ const CARD_INFO = {
     emoji: '🤰',
     customEmojiName: 'halt_hamster',
     description: 'Swap this card for 2 new random cards!',
-    color: '#B8E8D0',
+    color: '#5CDB95',
     image: 'pregnant_hamster.png',
   },
   [CARD_TYPES.HAY]: {
@@ -42,7 +42,7 @@ const CARD_INFO = {
     emoji: '🌾',
     customEmojiName: 'halt_hay',
     description: 'Triples the value of next Rabbit, Guinea Pig, or Chinchilla',
-    color: '#E8E0A0',
+    color: '#FFD166',
     image: 'hay.png',
   },
   [CARD_TYPES.GUINEA_PIG]: {
@@ -50,7 +50,7 @@ const CARD_INFO = {
     emoji: '🐹',
     customEmojiName: 'halt_guineapig',
     description: '3 points each',
-    color: '#D4A574',
+    color: '#FF8C61',
     image: 'guinea_pig.png',
   },
   [CARD_TYPES.RABBIT]: {
@@ -58,7 +58,7 @@ const CARD_INFO = {
     emoji: '🐰',
     customEmojiName: 'halt_rabbit',
     description: '2 points each',
-    color: '#D4B8E8',
+    color: '#B388EB',
     image: 'rabbit.png',
   },
   [CARD_TYPES.CHINCHILLA]: {
@@ -66,7 +66,7 @@ const CARD_INFO = {
     emoji: '🐭',
     customEmojiName: 'halt_chinchilla',
     description: '1 point each',
-    color: '#C8B8D8',
+    color: '#20B2AA',
     image: 'chinchilla.png',
   },
   [CARD_TYPES.DEGUS]: {
@@ -74,7 +74,7 @@ const CARD_INFO = {
     emoji: '🐿️',
     customEmojiName: 'halt_degu',
     description: 'Set of 3 = 10 points, otherwise 0',
-    color: '#C8B090',
+    color: '#E63946',
     image: 'degus.png',
   },
   [CARD_TYPES.SANCTUARY_CAT]: {
@@ -82,7 +82,7 @@ const CARD_INFO = {
     emoji: '🐱',
     customEmojiName: 'halt_cat',
     description: 'End-game: Most→+6, Least→-6',
-    color: '#F0D8A0',
+    color: '#77DD77',
     image: 'sanctuary_cat.png',
   },
 };

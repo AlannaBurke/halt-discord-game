@@ -160,27 +160,43 @@ Settings dashboard running at http://localhost:3000
 
 ## Custom Discord Emojis (Optional)
 
-HALT Go includes a set of custom kawaii emoji images in `assets/emojis/` that you can upload to your Discord server for a more personalized look. When uploaded, the bot automatically detects them and uses them in place of the default Unicode emojis throughout the game.
+HALT Go includes a set of adorable custom emoji images that you can upload to your Discord server. When uploaded, the bot automatically detects them and uses them everywhere in place of the default Unicode emojis — buttons, embeds, scoring breakdowns, and more!
+
+Each emoji features the animal on a bright colored circle that matches its card color:
+
+<p align="center">
+  <img src="assets/emojis/halt_rat.png" width="64" alt="Rat" />
+  <img src="assets/emojis/halt_gerbil.png" width="64" alt="Gerbil" />
+  <img src="assets/emojis/halt_hamster.png" width="64" alt="Pregnant Hamster" />
+  <img src="assets/emojis/halt_hay.png" width="64" alt="Hay" />
+  <img src="assets/emojis/halt_guineapig.png" width="64" alt="Guinea Pig" />
+  <img src="assets/emojis/halt_rabbit.png" width="64" alt="Rabbit" />
+  <img src="assets/emojis/halt_chinchilla.png" width="64" alt="Chinchilla" />
+  <img src="assets/emojis/halt_degu.png" width="64" alt="Degu" />
+  <img src="assets/emojis/halt_cat.png" width="64" alt="Sanctuary Cat" />
+</p>
 
 ### How to Upload
 
 1. In Discord, go to **Server Settings** > **Emoji**
 2. Click **Upload Emoji**
-3. Upload each image from `assets/emojis/` and name them exactly as shown below:
+3. Upload each image from `assets/emojis/`. The filenames are already set to the correct Discord emoji names:
 
-| File | Emoji Name | Card |
-|------|------------|------|
-| `rat.png` | `halt_rat` | Rat |
-| `gerbil.png` | `halt_gerbil` | Gerbil |
-| `pregnant_hamster.png` | `halt_hamster` | Pregnant Hamster |
-| `hay.png` | `halt_hay` | Hay |
-| `guinea_pig.png` | `halt_guineapig` | Guinea Pig |
-| `rabbit.png` | `halt_rabbit` | Rabbit |
-| `chinchilla.png` | `halt_chinchilla` | Chinchilla |
-| `degus.png` | `halt_degu` | Degu |
-| `sanctuary_cat.png` | `halt_cat` | Sanctuary Cat |
+| Preview | File | Discord Name | Card | Color |
+|---------|------|--------------|------|-------|
+| <img src="assets/emojis/halt_rat.png" width="24" /> | `halt_rat.png` | `:halt_rat:` | Rat | Hot Pink |
+| <img src="assets/emojis/halt_gerbil.png" width="24" /> | `halt_gerbil.png` | `:halt_gerbil:` | Gerbil | Sky Blue |
+| <img src="assets/emojis/halt_hamster.png" width="24" /> | `halt_hamster.png` | `:halt_hamster:` | Pregnant Hamster | Mint Green |
+| <img src="assets/emojis/halt_hay.png" width="24" /> | `halt_hay.png` | `:halt_hay:` | Hay | Sunny Yellow |
+| <img src="assets/emojis/halt_guineapig.png" width="24" /> | `halt_guineapig.png` | `:halt_guineapig:` | Guinea Pig | Coral Orange |
+| <img src="assets/emojis/halt_rabbit.png" width="24" /> | `halt_rabbit.png` | `:halt_rabbit:` | Rabbit | Lavender Purple |
+| <img src="assets/emojis/halt_chinchilla.png" width="24" /> | `halt_chinchilla.png` | `:halt_chinchilla:` | Chinchilla | Teal |
+| <img src="assets/emojis/halt_degu.png" width="24" /> | `halt_degu.png` | `:halt_degu:` | Degu | Crimson Red |
+| <img src="assets/emojis/halt_cat.png" width="24" /> | `halt_cat.png` | `:halt_cat:` | Sanctuary Cat | Lime Green |
 
-The names must match exactly (they are case-sensitive). After uploading, restart the bot and it will log how many custom emojis it found. If an emoji is missing or misnamed, the bot falls back to the default Unicode emoji for that card.
+The names must match exactly (they are case-sensitive). When you upload a file named `halt_rat.png`, Discord will automatically set the emoji name to `halt_rat`.
+
+After uploading, restart the bot and you should see `Loaded 9 custom emojis from [server name]` in the console. If an emoji is missing or misnamed, the bot falls back to the default Unicode emoji for that card.
 
 ## Settings Dashboard (Optional)
 
