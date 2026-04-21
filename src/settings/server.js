@@ -276,16 +276,23 @@ function createSettingsApp(config) {
   // ============================================================
   // Serve the dashboard SPA
   // ============================================================
+
+  // Read the dashboard HTML once at startup (avoids Express 5 sendFile issues)
+  const DASHBOARD_HTML_PATH = path.resolve(PUBLIC_DIR, 'index.html');
+  let dashboardHtml = '';
+  try {
+    dashboardHtml = fs.readFileSync(DASHBOARD_HTML_PATH, 'utf-8');
+    console.log(`📄 Dashboard HTML loaded (${dashboardHtml.length} bytes)`);
+  } catch (err) {
+    console.error('Failed to load dashboard HTML:', err.message);
+  }
+
   app.get('/', (req, res) => {
-    const filePath = path.resolve(PUBLIC_DIR, 'index.html');
-    res.sendFile(filePath, (err) => {
-      if (err) {
-        console.error('Error serving settings dashboard:', err.message);
-        if (!res.headersSent) {
-          res.status(500).send('Error loading settings dashboard');
-        }
-      }
-    });
+    if (!dashboardHtml) {
+      return res.status(500).send('Dashboard HTML not found. Check server logs.');
+    }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(dashboardHtml);
   });
 
   // Error handler (required for Express 5 to prevent hanging responses)
