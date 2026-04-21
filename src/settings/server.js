@@ -277,7 +277,23 @@ function createSettingsApp(config) {
   // Serve the dashboard SPA
   // ============================================================
   app.get('/', (req, res) => {
-    res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+    const filePath = path.resolve(PUBLIC_DIR, 'index.html');
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error('Error serving settings dashboard:', err.message);
+        if (!res.headersSent) {
+          res.status(500).send('Error loading settings dashboard');
+        }
+      }
+    });
+  });
+
+  // Error handler (required for Express 5 to prevent hanging responses)
+  app.use((err, req, res, next) => {
+    console.error('Settings server error:', err.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   return app;
