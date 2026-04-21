@@ -282,8 +282,57 @@
 
     .styled-table .emoji-cell {
       font-size: 1.3rem;
-      width: 40px;
+      width: 48px;
       text-align: center;
+    }
+
+    .styled-table .emoji-cell img {
+      width: 32px;
+      height: 32px;
+      vertical-align: middle;
+    }
+
+    .emoji-inline {
+      width: 24px;
+      height: 24px;
+      vertical-align: middle;
+      margin: 0 2px;
+    }
+
+    .emoji-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      justify-content: center;
+    }
+
+    .emoji-gallery-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--surface);
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius);
+      border: 1px solid #2a2a4a;
+      min-width: 100px;
+    }
+
+    .emoji-gallery-item img {
+      width: 48px;
+      height: 48px;
+    }
+
+    .emoji-gallery-item .emoji-name {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    .emoji-gallery-item .emoji-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
     }
 
     /* ============================================================
@@ -543,6 +592,19 @@
     let cards = [];
     let currentPage = 'gameplay';
 
+    // Helper: render an emoji image tag or fallback to Unicode
+    function emojiImg(card, size = 24, cssClass = 'emoji-inline') {
+      if (card && card.emojiImage) {
+        return `<img src="${card.emojiImage}" alt="${card.name}" width="${size}" height="${size}" class="${cssClass}">`;
+      }
+      return card ? card.emoji : '';
+    }
+
+    // Helper: find a card by its name (case-insensitive)
+    function findCard(name) {
+      return cards.find(c => c.name.toLowerCase() === name.toLowerCase()) || null;
+    }
+
     // ============================================================
     // Init
     // ============================================================
@@ -653,6 +715,48 @@
     // ============================================================
     function renderGameplayPage() {
       const app = document.getElementById('app');
+
+      // Build emoji-rich card scoring table rows
+      const cardRows = [
+        { name: 'Rat', scoring: 'Scaling set: 1=1, 2=3, 3=6, 4=10, 5+=15 pts', strategy: 'High reward for collecting many, but diminishing returns after 5' },
+        { name: 'Gerbil', scoring: 'Majority: Most=+6, 2nd most=+3 pts', strategy: 'Compete with other players for the most gerbils' },
+        { name: 'Pregnant Hamster', scoring: 'Swap for 2 new random cards', strategy: 'Gamble for better cards — you lose this card but gain 2 new ones' },
+        { name: 'Hay', scoring: 'Triples the value of the next Guinea Pig, Rabbit, or Chinchilla', strategy: 'Powerful multiplier — pick Hay before a high-value animal' },
+        { name: 'Guinea Pig', scoring: '3 points each (9 with Hay)', strategy: 'Reliable points, excellent Hay target' },
+        { name: 'Rabbit', scoring: '2 points each (6 with Hay)', strategy: 'Solid mid-tier value' },
+        { name: 'Chinchilla', scoring: '1 point each (3 with Hay)', strategy: 'Low value alone, but common and boosted by Hay' },
+        { name: 'Degu', scoring: 'Set of 3 = 10 pts, otherwise 0', strategy: 'All-or-nothing — commit to collecting 3 or skip entirely' },
+        { name: 'Sanctuary Cat', scoring: 'End-game: Most cats=+6, Least cats=-6', strategy: 'Scored after all 3 rounds. Avoid having the fewest!' },
+      ].map(row => {
+        const card = findCard(row.name);
+        return `<tr>
+          <td class="emoji-cell">${emojiImg(card, 32)}</td>
+          <td><strong>${row.name}</strong></td>
+          <td>${row.scoring}</td>
+          <td>${row.strategy}</td>
+        </tr>`;
+      }).join('');
+
+      // Build emoji gallery for the Emojis section
+      const emojiGallery = cards.map(card => `
+        <div class="emoji-gallery-item">
+          <img src="${card.emojiImage || ''}" alt="${card.name}">
+          <span class="emoji-label">${card.name}</span>
+          <span class="emoji-name">:${card.customEmojiName}:</span>
+        </div>
+      `).join('');
+
+      // Build emoji upload table
+      const emojiTable = cards.map(card => `
+        <tr>
+          <td class="emoji-cell">${emojiImg(card, 32)}</td>
+          <td><strong>${card.name}</strong></td>
+          <td><span class="code-inline">${card.customEmojiName}.png</span></td>
+          <td><span class="code-inline">:${card.customEmojiName}:</span></td>
+          <td style="color: ${card.color}">${card.color}</td>
+        </tr>
+      `).join('');
+
       app.innerHTML = `
         <div class="page">
           <h2>How to Play HALT Go</h2>
@@ -716,60 +820,7 @@
               <tr><th></th><th>Card</th><th>How It Scores</th><th>Strategy</th></tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="emoji-cell">&#x1f400;</td>
-                <td><strong>Rat</strong></td>
-                <td>Scaling set: 1=1, 2=3, 3=6, 4=10, 5+=15 pts</td>
-                <td>High reward for collecting many, but diminishing returns after 5</td>
-              </tr>
-              <tr>
-                <td class="emoji-cell">&#x1f439;</td>
-                <td><strong>Gerbil</strong></td>
-                <td>Majority: Most=+6, 2nd most=+3 pts</td>
-                <td>Compete with other players for the most gerbils</td>
-              </tr>
-              <tr>
-                <td class="emoji-cell">&#x1f930;</td>
-                <td><strong>Pregnant Hamster</strong></td>
-                <td>Swap for 2 new random cards</td>
-                <td>Gamble for better cards — you lose this card but gain 2 new ones</td>
-              </tr>
-              <tr>
-                <td class="emoji-cell">&#x1f33e;</td>
-                <td><strong>Hay</strong></td>
-                <td>Triples the value of the next Guinea Pig, Rabbit, or Chinchilla</td>
-                <td>Powerful multiplier — pick Hay before a high-value animal</td>
-              </tr>
-              <tr>
-                <td class="emoji-cell">&#x1f439;</td>
-                <td><strong>Guinea Pig</strong></td>
-                <td>3 points each (9 with Hay)</td>
-                <td>Reliable points, excellent Hay target</td>
-              </tr>
-              <tr>
-                <td class="emoji-cell">&#x1f430;</td>
-                <td><strong>Rabbit</strong></td>
-                <td>2 points each (6 with Hay)</td>
-                <td>Solid mid-tier value</td>
-              </tr>
-              <tr>
-                <td class="emoji-cell">&#x1f42d;</td>
-                <td><strong>Chinchilla</strong></td>
-                <td>1 point each (3 with Hay)</td>
-                <td>Low value alone, but common and boosted by Hay</td>
-              </tr>
-              <tr>
-                <td class="emoji-cell">&#x1f43f;&#xfe0f;</td>
-                <td><strong>Degu</strong></td>
-                <td>Set of 3 = 10 pts, otherwise 0</td>
-                <td>All-or-nothing — commit to collecting 3 or skip entirely</td>
-              </tr>
-              <tr>
-                <td class="emoji-cell">&#x1f431;</td>
-                <td><strong>Sanctuary Cat</strong></td>
-                <td>End-game: Most cats=+6, Least cats=-6</td>
-                <td>Scored after all 3 rounds. Avoid having the fewest!</td>
-              </tr>
+              ${cardRows}
             </tbody>
           </table>
 
@@ -777,15 +828,15 @@
           <h4>After Each Round</h4>
           <p>At the end of each round, the following scores are calculated from the cards you collected that round:</p>
           <ul>
-            <li><strong>Flat-value cards</strong> (Guinea Pig, Rabbit, Chinchilla) score their base points</li>
-            <li><strong>Hay multipliers</strong> are applied to the next eligible card in your collection</li>
-            <li><strong>Rat sets</strong> are scored based on how many you collected</li>
-            <li><strong>Gerbil majority</strong> is compared across all players</li>
-            <li><strong>Degu sets</strong> are checked (need exactly 3 for points)</li>
+            <li>${emojiImg(findCard('Guinea Pig'))} ${emojiImg(findCard('Rabbit'))} ${emojiImg(findCard('Chinchilla'))} <strong>Flat-value cards</strong> (Guinea Pig, Rabbit, Chinchilla) score their base points</li>
+            <li>${emojiImg(findCard('Hay'))} <strong>Hay multipliers</strong> are applied to the next eligible card in your collection</li>
+            <li>${emojiImg(findCard('Rat'))} <strong>Rat sets</strong> are scored based on how many you collected</li>
+            <li>${emojiImg(findCard('Gerbil'))} <strong>Gerbil majority</strong> is compared across all players</li>
+            <li>${emojiImg(findCard('Degu'))} <strong>Degu sets</strong> are checked (need exactly 3 for points)</li>
           </ul>
 
           <h4>After the Final Round</h4>
-          <p><strong>Sanctuary Cat</strong> bonuses are applied across all 3 rounds combined:</p>
+          <p>${emojiImg(findCard('Sanctuary Cat'))} <strong>Sanctuary Cat</strong> bonuses are applied across all 3 rounds combined:</p>
           <ul>
             <li>The player with the <strong>most</strong> Sanctuary Cats across all rounds gets <strong>+6 points</strong></li>
             <li>The player with the <strong>fewest</strong> Sanctuary Cats gets <strong>-6 points</strong></li>
@@ -794,6 +845,36 @@
 
           <h3>Collectible Gallery</h3>
           <p>At the end of the game, every player receives a personalized <strong>collection gallery</strong> image showing all the cards they collected across all 3 rounds, along with their final score. This gallery is posted in the game channel and also sent as a DM so you can save it.</p>
+
+          <h3>Custom Discord Emojis</h3>
+          <p>HALT Go comes with a set of custom emoji for each card type. When uploaded to your Discord server, they automatically replace the default Unicode emoji throughout the game — in buttons, embeds, scoring breakdowns, and more.</p>
+
+          <div class="emoji-gallery">
+            ${emojiGallery}
+          </div>
+
+          <h4>How to Upload Emojis</h4>
+          <ol class="steps">
+            <li>The emoji image files are included in the repository under <span class="code-inline">assets/emojis/</span>. Each file is already named with the correct Discord emoji name.</li>
+            <li>In Discord, go to <strong>Server Settings</strong> (click the server name > Server Settings) > <strong>Emoji</strong>.</li>
+            <li>Click <strong>Upload Emoji</strong> and select all 9 files from the <span class="code-inline">assets/emojis/</span> folder. Discord will automatically use the filename as the emoji name.</li>
+            <li>Restart the bot with <span class="code-inline">pnpm start</span>. You should see <span class="code-inline">Loaded 9 custom emojis</span> in the console output.</li>
+          </ol>
+
+          <h4>Emoji Reference</h4>
+          <table class="styled-table">
+            <thead>
+              <tr><th></th><th>Card</th><th>Filename</th><th>Discord Name</th><th>Color</th></tr>
+            </thead>
+            <tbody>
+              ${emojiTable}
+            </tbody>
+          </table>
+
+          <div class="panel panel-info">
+            <h4>Automatic Detection</h4>
+            <p>The bot automatically detects custom emojis on startup by matching the names above. If any emoji is missing, it gracefully falls back to the default Unicode emoji. You can upload just a few or all of them — it's completely optional.</p>
+          </div>
 
           <h3>Other Commands</h3>
           <table class="styled-table">
@@ -810,12 +891,12 @@
           <h3>Tips for New Players</h3>
           <div class="panel panel-accent">
             <ul>
-              <li><strong>Watch the Gerbils</strong> — If no one else is collecting them, the majority bonus is easy points.</li>
-              <li><strong>Hay + Guinea Pig = 9 points</strong> — The best Hay combo. Prioritize it when you see both.</li>
-              <li><strong>Commit to Degu or skip them</strong> — Having 1 or 2 Degu is worth nothing. Only go for them if you can get 3.</li>
-              <li><strong>Don't ignore Sanctuary Cats</strong> — Having the fewest costs you 6 points. Pick at least a couple across the game.</li>
-              <li><strong>Pregnant Hamster is a gamble</strong> — You trade 1 known card for 2 random ones. Great early in a round, risky late.</li>
-              <li><strong>Rats cap at 5</strong> — Collecting more than 5 rats doesn't give extra points (still 15).</li>
+              <li>${emojiImg(findCard('Gerbil'))} <strong>Watch the Gerbils</strong> — If no one else is collecting them, the majority bonus is easy points.</li>
+              <li>${emojiImg(findCard('Hay'))} ${emojiImg(findCard('Guinea Pig'))} <strong>Hay + Guinea Pig = 9 points</strong> — The best Hay combo. Prioritize it when you see both.</li>
+              <li>${emojiImg(findCard('Degu'))} <strong>Commit to Degu or skip them</strong> — Having 1 or 2 Degu is worth nothing. Only go for them if you can get 3.</li>
+              <li>${emojiImg(findCard('Sanctuary Cat'))} <strong>Don't ignore Sanctuary Cats</strong> — Having the fewest costs you 6 points. Pick at least a couple across the game.</li>
+              <li>${emojiImg(findCard('Pregnant Hamster'))} <strong>Pregnant Hamster is a gamble</strong> — You trade 1 known card for 2 random ones. Great early in a round, risky late.</li>
+              <li>${emojiImg(findCard('Rat'))} <strong>Rats cap at 5</strong> — Collecting more than 5 rats doesn't give extra points (still 15).</li>
             </ul>
           </div>
         </div>
@@ -852,7 +933,7 @@
 
       el.innerHTML = `
         <div class="card-item-header">
-          <span class="emoji">${card.emoji}</span>
+          <span class="emoji">${card.emojiImage ? `<img src="${card.emojiImage}" width="36" height="36" style="vertical-align: middle;">` : card.emoji}</span>
           <div class="info">
             <h3>${card.name}</h3>
             <p>${card.description}</p>

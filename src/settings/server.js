@@ -20,6 +20,7 @@ const { regenerateCard } = require('./cardPipeline');
 const ASSETS_DIR = path.join(__dirname, '../../assets/cards');
 const CUSTOM_DIR = path.join(__dirname, '../../assets/cards/custom');
 const DISCORD_DIR = path.join(__dirname, '../../assets/cards/discord');
+const EMOJIS_DIR = path.join(__dirname, '../../assets/emojis');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 // Ensure directories exist
@@ -74,6 +75,9 @@ function createSettingsApp(config) {
   app.use('/cards/original', express.static(ASSETS_DIR));
   app.use('/cards/custom', express.static(CUSTOM_DIR));
   app.use('/cards/discord', express.static(DISCORD_DIR));
+
+  // Serve emoji images
+  app.use('/emojis', express.static(EMOJIS_DIR));
 
   // JSON body parser
   app.use(express.json());
@@ -198,6 +202,8 @@ function createSettingsApp(config) {
         id,
         name: info.name,
         emoji: info.emoji,
+        customEmojiName: info.customEmojiName || null,
+        emojiImage: info.customEmojiName ? `/emojis/${info.customEmojiName}.png` : null,
         description: info.description,
         color: info.color,
         hasCustomImage: hasCustom,
