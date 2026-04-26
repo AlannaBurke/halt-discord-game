@@ -235,7 +235,7 @@ async function generateCollectibleGallery(playerName, allCards, totalScore, file
   ctx.fillStyle = '#CCAACC';
   ctx.font = `${11 * S}px "NotoSans-Regular", "Noto Sans", sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText('HALT Go \u2022 helpingalllittlethings.org', totalW / 2, totalH - padding);
+  ctx.fillText('HALT Bot \u2022 helpingalllittlethings.org', totalW / 2, totalH - padding);
 
   // Downscale to 1x for final output
   const finalW = Math.round(totalW / S);

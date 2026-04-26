@@ -1,6 +1,6 @@
-# HALT Go Fundraiser System
+# HALT Bot Fundraiser System
 
-The HALT Go Discord bot includes a built-in fundraiser module designed to help rescue organizations and communities run donation drives. It provides Discord commands for users to discover donation options, report their contributions, and view progress via a dynamically generated thermometer graphic.
+The HALT Bot includes a built-in fundraiser module designed to help rescue organizations and communities run donation drives. It provides Discord commands for users to discover donation options, report their contributions, and view progress via a dynamically generated thermometer graphic.
 
 ## Features
 

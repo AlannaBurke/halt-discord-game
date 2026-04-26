@@ -1,5 +1,5 @@
 /**
- * HALT Go Fundraiser Module
+ * HALT Bot Fundraiser Module
  *
  * Manages donation tracking, goal progress, and persistence.
  * Stores data in a local JSON file for simplicity.

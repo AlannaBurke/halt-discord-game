@@ -817,7 +817,7 @@ function setupGameEvents(game) {
                 const dmChannel = player.dmChannel || await user.createDM();
                 const dmAttachment = new AttachmentBuilder(galleryPath, { name: `${player.username}_collection.png` });
                 await dmChannel.send({
-                  content: `🎴 **Your HALT Go Collection!**\nYou collected **${player.allCards.length} cards** and scored **${playerResult.totalScore} points**!\nSave this image as a keepsake! 🐾`,
+                  content: `🃏 **Your HALT Bot Collection!**\nYou collected **${player.allCards.length} cards** and scored **${playerResult.totalScore} points**!\nSave this image as a keepsake! 🐾`,
                   files: [dmAttachment],
                 });
               } catch (dmError) {
@@ -868,7 +868,7 @@ if (process.env.SETTINGS_ENABLED === 'true') {
     redirectUri: process.env.SETTINGS_REDIRECT_URI || `http://localhost:${settingsPort}/auth/callback`,
     adminRoleId: process.env.SETTINGS_ADMIN_ROLE_ID,
     guildId: process.env.GUILD_ID,
-    sessionSecret: process.env.SESSION_SECRET || 'halt-go-secret-change-me',
+    sessionSecret: process.env.SESSION_SECRET || 'halt-bot-secret-change-me',
   });
 
   settingsApp.listen(settingsPort, '0.0.0.0', () => {

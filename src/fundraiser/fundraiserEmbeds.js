@@ -50,7 +50,7 @@ function createDonateEmbed(config) {
     .setTitle(`🎉 ${goalLabel}`)
     .setDescription(description)
     .setColor(0xFF69B4) // Hot pink
-    .setFooter({ text: 'Helping All Little Things • HALT Go' })
+    .setFooter({ text: 'Helping All Little Things • HALT Bot' })
     .setTimestamp();
 
   // Build button row
@@ -121,7 +121,7 @@ function createFundraiserProgressEmbed(status) {
     .setTitle('🌡️ Fundraiser Progress')
     .setDescription(description)
     .setColor(progress >= 100 ? 0x5CDB95 : 0xFF69B4)
-    .setFooter({ text: 'Helping All Little Things • HALT Go • Use /donate to contribute!' })
+    .setFooter({ text: 'Helping All Little Things • HALT Bot • Use /donate to contribute!' })
     .setTimestamp();
 
   return embed;
@@ -267,7 +267,7 @@ function createPendingDonationsEmbed(pendingDonations, currencySymbol = '$') {
       `Use \`/confirm <id>\` to approve or \`/deny <id>\` to reject.\n\n${list}`
     )
     .setColor(0xFFD166)
-    .setFooter({ text: 'HALT Go Fundraiser • Admin View' })
+    .setFooter({ text: 'HALT Bot Fundraiser • Admin View' })
     .setTimestamp();
 }
 

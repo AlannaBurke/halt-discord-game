@@ -267,7 +267,7 @@ async function generateThermometer(opts) {
   ctx.fillStyle = COLORS.footerText;
   ctx.font = `${10 * S}px "NotoSans-Regular", "Noto Sans", sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText('HALT Go \u2022 helpingalllittlethings.org', WIDTH / 2, HEIGHT - PADDING);
+  ctx.fillText('HALT Bot \u2022 helpingalllittlethings.org', WIDTH / 2, HEIGHT - PADDING);
 
   // ---- Try to add a cute emoji in the corner ----
   try {

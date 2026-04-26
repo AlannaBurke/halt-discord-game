@@ -1,8 +1,8 @@
-# HALT Go — Game Design Document
+# HALT Go (Minigame) — Game Design Document
 
 ## Overview
 
-HALT Go is a simultaneous multiplayer drafting and combo-scoring Discord game inspired by [Sushi Go](https://youtu.be/-WO1cP9wzrw), themed around adorable rescue animals. Players build card collections over synchronized phases, with automatic scoring after each round. 3 rounds total, highest score wins.
+HALT Go is a minigame module within the HALT Bot. It is a simultaneous multiplayer drafting and combo-scoring Discord game inspired by [Sushi Go](https://youtu.be/-WO1cP9wzrw), themed around adorable rescue animals. Players build card collections over synchronized phases, with automatic scoring after each round. 3 rounds total, highest score wins.
 
 Built for [Helping All Little Things (HALT)](https://helpingalllittlethings.org), a small animal rescue organization.
 

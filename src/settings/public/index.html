@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HALT Go — Settings</title>
+  <title>HALT Bot — Settings</title>
   <style>
     :root {
       --bg: #1a1a2e;
@@ -731,7 +731,7 @@
 <body>
   <div class="header">
     <div class="header-left">
-      <h1 onclick="navigate('gameplay')">HALT Go</h1>
+      <h1 onclick="navigate('gameplay')">HALT Bot</h1>
       <nav class="nav" id="nav"></nav>
     </div>
     <div id="header-right"></div>
@@ -870,7 +870,7 @@
       const app = document.getElementById('app');
       app.innerHTML = `
         <div class="login-screen">
-          <h2>HALT Go</h2>
+          <h2>HALT Bot</h2>
           <p>A simultaneous multiplayer card drafting Discord game with adorable rescue animals. Login with Discord to access the dashboard.</p>
           ${error ? `<div class="error-banner">${error}</div>` : ''}
           <a href="/auth/login" class="btn btn-login">Login with Discord</a>
@@ -1015,7 +1015,7 @@
           <p>At the end of the game, every player receives a personalized <strong>collection gallery</strong> image showing all the cards they collected across all 3 rounds, along with their final score. This gallery is posted in the game channel and also sent as a DM so you can save it.</p>
 
           <h3>Custom Discord Emojis</h3>
-          <p>HALT Go comes with a set of custom emoji for each card type. When uploaded to your Discord server, they automatically replace the default Unicode emoji throughout the game — in buttons, embeds, scoring breakdowns, and more.</p>
+          <p>HALT Bot comes with a set of custom emoji for the HALT Go card game. When uploaded to your Discord server, they automatically replace the default Unicode emoji throughout the game — in buttons, embeds, scoring breakdowns, and more.</p>
 
           <div class="emoji-gallery">
             ${emojiGallery}
@@ -1156,11 +1156,11 @@
       app.innerHTML = `
         <div class="page">
           <h2>Setup Guide</h2>
-          <p>Complete guide to setting up the HALT Go Discord bot and this settings dashboard.</p>
+          <p>Complete guide to setting up the HALT Bot and this settings dashboard.</p>
 
           <h3>1. Create a Discord Application</h3>
           <ol class="steps">
-            <li>Go to the <a href="https://discord.com/developers/applications" target="_blank" style="color: var(--accent);">Discord Developer Portal</a> and click <strong>New Application</strong>. Name it "HALT Go" (or whatever you like).</li>
+            <li>Go to the <a href="https://discord.com/developers/applications" target="_blank" style="color: var(--accent);">Discord Developer Portal</a> and click <strong>New Application</strong>. Name it "HALT Bot" (or whatever you like).</li>
             <li>Go to the <strong>Bot</strong> tab. Click <strong>Reset Token</strong> and copy the token — this is your <span class="code-inline">DISCORD_TOKEN</span>. Save it somewhere safe; you cannot view it again.</li>
             <li>Still on the Bot tab, scroll down to <strong>Privileged Gateway Intents</strong> and enable <strong>Message Content Intent</strong>.</li>
             <li>Go to the <strong>OAuth2</strong> tab. Copy the <strong>Client ID</strong> — this is your <span class="code-inline">CLIENT_ID</span>.</li>
@@ -1236,13 +1236,13 @@ pnpm run deploy
 pnpm start</div>
 
           <p>You should see output like:</p>
-          <div class="code-block">&#x2705; Logged in as HALT-GO#1234
+          <div class="code-block">&#x2705; Logged in as HALTBot#1234
 &#x1f4ca; Serving 1 guilds
 &#x2699;&#xfe0f;  Settings dashboard running at http://localhost:3000</div>
 
           <h3>7. Verify Everything Works</h3>
           <ol class="steps">
-            <li>In Discord, type <span class="code-inline">/help</span> — you should see the HALT Go rules embed.</li>
+            <li>In Discord, type <span class="code-inline">/help</span> — you should see the HALT Bot rules embed.</li>
             <li>Type <span class="code-inline">/game</span> to create a test lobby. Toggle the computer player on and start a game to test the full flow.</li>
             <li>Visit <a href="http://localhost:3000" style="color: var(--accent);">http://localhost:3000</a> and log in with Discord to verify the settings dashboard.</li>
           </ol>

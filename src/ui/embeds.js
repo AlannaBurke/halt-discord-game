@@ -30,7 +30,7 @@ function createLobbyEmbed(game) {
     : '';
 
   return new EmbedBuilder()
-    .setTitle('🐾 HALT Go — Lobby')
+    .setTitle('🐾 HALT Bot — Game Lobby')
     .setDescription(
       `**${Array.from(game.players.values())[0].username}** is hosting a game!\n\n` +
       `Click **Join Game** to play!\n` +
@@ -49,7 +49,7 @@ function createLobbyEmbed(game) {
       }
     )
     .setColor(0xFFB6C1)
-    .setFooter({ text: 'Helping All Little Things • HALT Go' })
+    .setFooter({ text: 'Helping All Little Things • HALT Bot' })
     .setTimestamp();
 }
 
@@ -65,7 +65,7 @@ function createRoundStartEmbed(round, totalRounds) {
       `Check your DMs for your card choices!`
     )
     .setColor(0x87CEEB)
-    .setFooter({ text: 'HALT Go • Cards will appear in your DMs' });
+    .setFooter({ text: 'HALT Bot • Cards will appear in your DMs' });
 }
 
 /**
@@ -82,7 +82,7 @@ function createPhaseAnnouncementEmbed(round, phase, totalPhases) {
       `⏱️ You have **${GAME_CONFIG.PHASE_TIMER_SECONDS} seconds** to choose.`
     )
     .setColor(0xFFD700)
-    .setFooter({ text: 'HALT Go • Pick a card in your DMs!' });
+    .setFooter({ text: 'HALT Bot • Pick a card in your DMs!' });
 }
 
 /**
@@ -263,7 +263,7 @@ function createGameEndEmbed(results, getEmoji) {
       }
     )
     .setColor(0xFFD700)
-    .setFooter({ text: 'Helping All Little Things • HALT Go • Thanks for playing!' })
+    .setFooter({ text: 'Helping All Little Things • HALT Bot • Thanks for playing!' })
     .setTimestamp();
 }
 
@@ -287,7 +287,7 @@ function createHelpEmbed(getEmoji) {
   const re = (type) => resolveEmoji(type, getEmoji);
 
   return new EmbedBuilder()
-    .setTitle('🐾 HALT Go — How to Play')
+    .setTitle('🐾 HALT Bot — How to Play')
     .setDescription(
       `**HALT Go** is a simultaneous card drafting game where you collect adorable rescue animals!\n\n` +
       `**Setup:** Use \`/game\` to create a lobby, then others join. Host starts when ready.\n\n` +
@@ -341,7 +341,7 @@ function createHelpEmbed(getEmoji) {
       }
     )
     .setColor(0xFFB6C1)
-    .setFooter({ text: 'Helping All Little Things • HALT Go' });
+    .setFooter({ text: 'Helping All Little Things • HALT Bot' });
 }
 
 module.exports = {

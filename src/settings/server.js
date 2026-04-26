@@ -1,5 +1,5 @@
 /**
- * HALT Go Settings Dashboard — Express Server
+ * HALT Bot Settings Dashboard — Express Server
  *
  * Provides:
  * - Discord OAuth2 login with role-based access control
@@ -64,7 +64,7 @@ function createSettingsApp(config) {
 
   // Session middleware
   app.use(session({
-    secret: config.sessionSecret || 'halt-go-settings-secret',
+    secret: config.sessionSecret || 'halt-bot-settings-secret',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 3600000 }, // 1 hour

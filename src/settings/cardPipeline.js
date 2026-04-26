@@ -191,7 +191,7 @@ async function regenerateCard(cardId) {
   const brandFontSize = 12 * SCALE;
   ctx.font = `${brandFontSize}px "NotoSans-Regular", "Noto Sans", sans-serif`;
   ctx.fillStyle = hexToRgba(def.border, 0.55);
-  ctx.fillText('HALT Go', CARD_W / 2, CARD_H - m - 9 * SCALE);
+  ctx.fillText('HALT Bot', CARD_W / 2, CARD_H - m - 9 * SCALE);
 
   // Apply rounded corners by compositing
   const maskCanvas = createCanvas(CARD_W, CARD_H);
