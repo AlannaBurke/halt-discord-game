@@ -116,6 +116,14 @@ SETTINGS_ADMIN_ROLE_ID=your_role_id
 SETTINGS_PORT=3000
 SETTINGS_REDIRECT_URI=http://localhost:3000/auth/callback
 SESSION_SECRET=any-random-string-here
+
+# Fundraiser (optional)
+FUNDRAISER_ENABLED=true
+FUNDRAISER_GOAL_AMOUNT=500
+FUNDRAISER_GOAL_LABEL=HALT Fundraiser
+FUNDRAISER_PAYPAL_LINK=https://paypal.me/yourlink
+FUNDRAISER_CASHAPP_TAG=$YourCashTag
+FUNDRAISER_ANNOUNCEMENT_CHANNEL_ID=your_channel_id
 ```
 
 ### 6. Deploy Commands and Start
@@ -143,6 +151,12 @@ Settings dashboard running at http://localhost:3000
 | `/game` | Create a new game lobby in the current channel |
 | `/help` | View the rules and card descriptions |
 | `/status` | Check the status of the current game |
+| `/donate` | Show donation options for the active fundraiser |
+| `/fundraiser` | Check the current fundraiser progress with thermometer graphic |
+| `/donated <amount>` | Report a CashApp donation for admin verification |
+| `/confirm <id>` | Admin: Confirm a pending CashApp donation |
+| `/deny <id>` | Admin: Deny a pending CashApp donation |
+| `/pending` | Admin: View all pending CashApp donations |
 
 ## How to Play
 
@@ -198,15 +212,29 @@ The names must match exactly (they are case-sensitive). When you upload a file n
 
 After uploading, restart the bot and you should see `Loaded 9 custom emojis from [server name]` in the console. If an emoji is missing or misnamed, the bot falls back to the default Unicode emoji for that card.
 
+## Fundraiser System (Optional)
+
+HALT Go includes a built-in fundraiser system that lets your community donate to a cause and track progress with a visual thermometer graphic. The fundraiser supports two donation methods:
+
+- **PayPal** — Users click a link to donate directly. The bot provides the link via `/donate`.
+- **CashApp** — Users send money via CashApp, then self-report with `/donated <amount>`. Admins verify pending donations with `/confirm` or `/deny`.
+
+When a donation is confirmed, the bot posts a celebration announcement with a thermometer progress graphic in the configured announcement channel.
+
+To enable the fundraiser, set `FUNDRAISER_ENABLED=true` in your `.env` and configure the goal amount, labels, and payment links. You can also manage everything from the **Fundraiser** page in the settings dashboard.
+
 ## Settings Dashboard (Optional)
 
-HALT Go includes a web-based settings dashboard with three pages:
+HALT Go includes a web-based settings dashboard with four pages:
 
 ### How to Play Page
 Complete gameplay rules reference including card types, scoring mechanics, phase structure, and strategy tips.
 
 ### Card Manager Page
 Upload custom images for any of the 9 card types. When you upload a new image, the Discord-sized card is automatically regenerated with the frame, title, and scoring text. You can preview original, custom, and Discord-rendered versions side by side, and reset any card back to the default art. Changes take effect immediately in the next game.
+
+### Fundraiser Page
+Configure and manage the fundraiser for your Discord server. Enable/disable the fundraiser, set the goal amount and label, provide PayPal and CashApp links, and set the announcement channel. You can also view current progress, approve/deny pending CashApp donations, and view the list of recent donations.
 
 ### Setup Guide Page
 Step-by-step instructions for setting up the bot and dashboard, including how to find your Guild ID, Role ID, and all Discord Developer Portal configuration.
@@ -229,6 +257,10 @@ halt-discord-game/
 │   │   ├── Player.js             # Player state
 │   │   ├── CardGenerator.js      # Weighted random card generation
 │   │   └── Scoring.js            # All scoring logic
+│   ├── fundraiser/
+│   │   ├── Fundraiser.js         # Fundraiser engine (donations, config, persistence)
+│   │   ├── fundraiserEmbeds.js   # Fundraiser Discord embed builders
+│   │   └── thermometer.js        # Thermometer progress graphic generator
 │   ├── ui/
 │   │   ├── embeds.js             # Discord embed builders
 │   │   ├── buttons.js            # Button component builders
@@ -237,7 +269,7 @@ halt-discord-game/
 │   │   ├── server.js             # Express settings dashboard server
 │   │   ├── cardPipeline.js       # Card regeneration pipeline
 │   │   └── public/
-│   │       └── index.html        # Settings dashboard SPA (3 pages)
+│   │       └── index.html        # Settings dashboard SPA (4 pages incl. fundraiser)
 │   └── utils/
 │       └── constants.js          # Card types, scoring tables, config
 ├── assets/

@@ -4,6 +4,7 @@
  * Provides:
  * - Discord OAuth2 login with role-based access control
  * - Card image upload/reset API
+ * - Fundraiser configuration and management API
  * - Auto-regeneration of Discord-sized cards after upload
  */
 
@@ -15,6 +16,7 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const { CARD_INFO, CARD_TYPES } = require('../utils/constants');
 const { regenerateCard } = require('./cardPipeline');
+const fundraiser = require('../fundraiser/Fundraiser');
 
 // Paths
 const ASSETS_DIR = path.join(__dirname, '../../assets/cards');
@@ -277,6 +279,85 @@ function createSettingsApp(config) {
       console.error(`Error resetting card ${cardId}:`, error);
       res.status(500).json({ error: 'Failed to reset card' });
     }
+  });
+
+  // ============================================================
+  // Fundraiser API Routes
+  // ============================================================
+
+  // Get fundraiser config + status
+  app.get('/api/fundraiser', requireAuth, (req, res) => {
+    const status = fundraiser.getStatus();
+    const config = fundraiser.config;
+    res.json({ config, status });
+  });
+
+  // Update fundraiser config
+  app.post('/api/fundraiser/config', requireAuth, (req, res) => {
+    const {
+      enabled,
+      goalAmount,
+      goalLabel,
+      paypalLink,
+      cashappTag,
+      announcementChannelId,
+    } = req.body;
+
+    const updates = {};
+    if (typeof enabled === 'boolean') updates.enabled = enabled;
+    if (goalAmount !== undefined && goalAmount !== null) updates.goalAmount = parseFloat(goalAmount);
+    if (goalLabel !== undefined) updates.goalLabel = String(goalLabel);
+    if (paypalLink !== undefined) updates.paypalLink = String(paypalLink);
+    if (cashappTag !== undefined) updates.cashappTag = String(cashappTag);
+    if (announcementChannelId !== undefined) updates.announcementChannelId = String(announcementChannelId);
+
+    const newConfig = fundraiser.updateConfig(updates);
+    res.json({ success: true, config: newConfig });
+  });
+
+  // Get all donations (confirmed)
+  app.get('/api/fundraiser/donations', requireAuth, (req, res) => {
+    const donations = fundraiser.getDonations();
+    res.json({ donations });
+  });
+
+  // Get pending donations
+  app.get('/api/fundraiser/pending', requireAuth, (req, res) => {
+    const pending = fundraiser.getPendingDonations();
+    res.json({ pending });
+  });
+
+  // Approve a pending donation
+  app.post('/api/fundraiser/pending/:id/approve', requireAuth, (req, res) => {
+    const adminUsername = req.session.user.globalName || req.session.user.username;
+    const donation = fundraiser.approvePending(req.params.id, adminUsername);
+
+    if (!donation) {
+      return res.status(404).json({ error: 'Pending donation not found' });
+    }
+
+    res.json({ success: true, donation });
+  });
+
+  // Deny a pending donation
+  app.post('/api/fundraiser/pending/:id/deny', requireAuth, (req, res) => {
+    const denied = fundraiser.denyPending(req.params.id);
+
+    if (!denied) {
+      return res.status(404).json({ error: 'Pending donation not found' });
+    }
+
+    res.json({ success: true, denied });
+  });
+
+  // Reset all donations (dangerous — requires confirmation via body)
+  app.post('/api/fundraiser/reset', requireAuth, (req, res) => {
+    if (req.body.confirm !== true) {
+      return res.status(400).json({ error: 'Must send { confirm: true } to reset' });
+    }
+
+    fundraiser.resetDonations();
+    res.json({ success: true, message: 'All donations have been reset' });
   });
 
   // ============================================================

@@ -537,6 +537,172 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ============================================================
+       Fundraiser Styles
+       ============================================================ */
+    .fundraiser-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .fundraiser-grid { grid-template-columns: 1fr; }
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--border-radius);
+      padding: 1.25rem 1.5rem;
+      border: 1px solid #2a2a4a;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .progress-bar-container {
+      background: #2a2a4a;
+      border-radius: 12px;
+      height: 24px;
+      overflow: hidden;
+      margin: 0.75rem 0;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FF69B4, #E8A0BF);
+      border-radius: 12px;
+      transition: width 0.5s ease;
+      min-width: 0;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-group .form-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: var(--bg);
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+
+    .toggle-track {
+      width: 44px;
+      height: 24px;
+      background: #2a2a4a;
+      border-radius: 12px;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .toggle-track.active {
+      background: var(--success);
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+    }
+
+    .toggle-track.active::after {
+      transform: translateX(20px);
+    }
+
+    .toggle-label {
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .btn-save {
+      background: var(--success);
+      color: #1a1a2e;
+      padding: 0.6rem 1.5rem;
+    }
+
+    .btn-save:hover {
+      background: #22c55e;
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-approve {
+      background: var(--success);
+      color: #1a1a2e;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+    }
+
+    .btn-deny {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+    }
+
+    .donation-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    /* ============================================================
        Footer
        ============================================================ */
     .footer {
@@ -658,6 +824,7 @@
       switch (page) {
         case 'gameplay': renderGameplayPage(); break;
         case 'cards': renderCardsPage(); break;
+        case 'fundraiser': renderFundraiserPage(); break;
         case 'setup': renderSetupPage(); break;
         default: renderGameplayPage();
       }
@@ -668,6 +835,7 @@
       nav.innerHTML = `
         <button class="nav-btn" data-page="gameplay" onclick="navigate('gameplay')">How to Play</button>
         <button class="nav-btn" data-page="cards" onclick="navigate('cards')">Card Manager</button>
+        <button class="nav-btn" data-page="fundraiser" onclick="navigate('fundraiser')">Fundraiser</button>
         <button class="nav-btn" data-page="setup" onclick="navigate('setup')">Setup Guide</button>
       `;
       updateNavActive();
@@ -885,6 +1053,12 @@
               <tr><td><span class="code-inline">/game</span></td><td>Create a new game lobby in the current channel</td></tr>
               <tr><td><span class="code-inline">/help</span></td><td>View the rules and card descriptions in Discord</td></tr>
               <tr><td><span class="code-inline">/status</span></td><td>Check the status of the current game in the channel</td></tr>
+              <tr><td><span class="code-inline">/donate</span></td><td>Show donation options for the active fundraiser</td></tr>
+              <tr><td><span class="code-inline">/fundraiser</span></td><td>Check the current fundraiser progress with thermometer graphic</td></tr>
+              <tr><td><span class="code-inline">/donated &lt;amount&gt;</span></td><td>Report a CashApp donation for admin verification</td></tr>
+              <tr><td><span class="code-inline">/confirm &lt;id&gt;</span></td><td>Admin: Confirm a pending CashApp donation</td></tr>
+              <tr><td><span class="code-inline">/deny &lt;id&gt;</span></td><td>Admin: Deny a pending CashApp donation</td></tr>
+              <tr><td><span class="code-inline">/pending</span></td><td>Admin: View all pending CashApp donations</td></tr>
             </tbody>
           </table>
 
@@ -1109,6 +1283,322 @@ pnpm start</div>
           </div>
         </div>
       `;
+    }
+
+    // ============================================================
+    // Page: Fundraiser
+    // ============================================================
+    let fundraiserData = null;
+
+    async function loadFundraiserData() {
+      try {
+        const res = await fetch('/api/fundraiser');
+        fundraiserData = await res.json();
+      } catch (e) {
+        fundraiserData = null;
+      }
+    }
+
+    async function renderFundraiserPage() {
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="page"><p style="color: var(--text-muted);">Loading fundraiser data...</p></div>`;
+
+      await loadFundraiserData();
+
+      if (!fundraiserData) {
+        app.innerHTML = `<div class="page"><p style="color: var(--danger);">Failed to load fundraiser data.</p></div>`;
+        return;
+      }
+
+      const { config, status } = fundraiserData;
+      const progress = Math.min(status.progress, 100);
+
+      // Load donations and pending
+      let donations = [];
+      let pending = [];
+      try {
+        const dRes = await fetch('/api/fundraiser/donations');
+        const dData = await dRes.json();
+        donations = dData.donations || [];
+
+        const pRes = await fetch('/api/fundraiser/pending');
+        const pData = await pRes.json();
+        pending = pData.pending || [];
+      } catch (e) { /* ignore */ }
+
+      const recentDonations = donations.slice(-10).reverse();
+
+      const donationRows = recentDonations.map(d => {
+        const name = d.anonymous ? '<em>Anonymous</em>' : d.username;
+        const date = new Date(d.timestamp).toLocaleDateString();
+        const method = d.method === 'paypal' ? '💙 PayPal' : '💚 CashApp';
+        return `<tr>
+          <td>${name}</td>
+          <td><strong>${config.currencySymbol}${d.amount.toFixed(2)}</strong></td>
+          <td>${method}</td>
+          <td>${date}</td>
+        </tr>`;
+      }).join('');
+
+      const pendingRows = pending.map(p => {
+        const name = p.anonymous ? '<em>Anonymous</em>' : p.username;
+        const date = new Date(p.timestamp).toLocaleDateString();
+        return `<tr>
+          <td>${name}</td>
+          <td><strong>${config.currencySymbol}${p.amount.toFixed(2)}</strong></td>
+          <td style="font-size: 0.75rem; color: var(--text-muted);">${p.id}</td>
+          <td>${date}</td>
+          <td>
+            <button class="btn btn-approve" onclick="approvePending('${p.id}')">Approve</button>
+            <button class="btn btn-deny" onclick="denyPending('${p.id}')">Deny</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      app.innerHTML = `
+        <div class="page">
+          <h2>Fundraiser Settings</h2>
+          <p class="subtitle">Configure and manage the fundraiser for your Discord server. Donations are tracked via PayPal (link-based) and CashApp (self-reported with admin verification).</p>
+
+          <h3>Current Progress</h3>
+          <div class="fundraiser-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="stat-card">
+              <div class="stat-value">${config.currencySymbol}${status.totalRaised.toFixed(2)}</div>
+              <div class="stat-label">Raised</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${config.currencySymbol}${config.goalAmount.toFixed(2)}</div>
+              <div class="stat-label">Goal</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${status.donorCount}</div>
+              <div class="stat-label">Donors</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${status.donationCount}</div>
+              <div class="stat-label">Donations</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <span style="font-size: 0.85rem; color: var(--text-muted);">${Math.round(status.progress)}% complete</span>
+              <span style="font-size: 0.85rem; color: var(--text-muted);">${config.currencySymbol}${Math.max(0, config.goalAmount - status.totalRaised).toFixed(2)} to go</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" style="width: ${progress}%;"></div>
+            </div>
+          </div>
+
+          <h3>Configuration</h3>
+          <div class="panel">
+            <div class="form-group">
+              <div class="toggle-switch" onclick="toggleFundraiserEnabled()">
+                <div class="toggle-track ${config.enabled ? 'active' : ''}" id="toggle-enabled"></div>
+                <span class="toggle-label">${config.enabled ? 'Fundraiser Enabled' : 'Fundraiser Disabled'}</span>
+              </div>
+              <div class="form-hint">When enabled, users can use /donate, /fundraiser, and /donated commands.</div>
+            </div>
+
+            <div class="form-group">
+              <label>Goal Label</label>
+              <input type="text" class="form-input" id="fr-goal-label" value="${escapeHtml(config.goalLabel)}" placeholder="e.g., Hero & Ziggy's Birthday Fundraiser">
+              <div class="form-hint">The name shown in embeds and announcements.</div>
+            </div>
+
+            <div class="fundraiser-grid">
+              <div class="form-group">
+                <label>Goal Amount (${config.currencySymbol})</label>
+                <input type="number" class="form-input" id="fr-goal-amount" value="${config.goalAmount}" min="1" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>Announcement Channel ID</label>
+                <input type="text" class="form-input" id="fr-channel-id" value="${config.announcementChannelId}" placeholder="Right-click channel > Copy Channel ID">
+                <div class="form-hint">The channel where donation announcements are posted.</div>
+              </div>
+            </div>
+
+            <div class="fundraiser-grid">
+              <div class="form-group">
+                <label>PayPal Donation Link</label>
+                <input type="url" class="form-input" id="fr-paypal" value="${escapeHtml(config.paypalLink)}" placeholder="https://paypal.me/...">
+              </div>
+              <div class="form-group">
+                <label>CashApp Tag</label>
+                <input type="text" class="form-input" id="fr-cashapp" value="${escapeHtml(config.cashappTag)}" placeholder="$YourCashTag">
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-save" onclick="saveFundraiserConfig()">Save Configuration</button>
+            </div>
+          </div>
+
+          ${pending.length > 0 ? `
+          <h3>Pending Donations (${pending.length})</h3>
+          <div class="panel panel-warning">
+            <p style="margin-bottom: 1rem;">These CashApp donations have been self-reported and need admin verification.</p>
+            <div class="donation-list">
+              <table class="styled-table">
+                <thead>
+                  <tr><th>Donor</th><th>Amount</th><th>ID</th><th>Date</th><th>Actions</th></tr>
+                </thead>
+                <tbody>${pendingRows}</tbody>
+              </table>
+            </div>
+          </div>
+          ` : ''}
+
+          <h3>Recent Donations</h3>
+          ${recentDonations.length > 0 ? `
+          <div class="panel">
+            <div class="donation-list">
+              <table class="styled-table">
+                <thead>
+                  <tr><th>Donor</th><th>Amount</th><th>Method</th><th>Date</th></tr>
+                </thead>
+                <tbody>${donationRows}</tbody>
+              </table>
+            </div>
+          </div>
+          ` : `
+          <div class="panel">
+            <p style="color: var(--text-muted); text-align: center;">No donations yet. Share the <span class="code-inline">/donate</span> command with your community!</p>
+          </div>
+          `}
+
+          <h3>Danger Zone</h3>
+          <div class="panel" style="border-color: var(--danger);">
+            <p>Reset all donation data. This cannot be undone.</p>
+            <button class="btn btn-danger" onclick="resetFundraiserData()">Reset All Donations</button>
+          </div>
+
+          <h3>How It Works</h3>
+          <div class="panel panel-info">
+            <h4>PayPal Donations</h4>
+            <p>When users run <span class="code-inline">/donate</span>, they see a button linking to your PayPal donation page. PayPal donations are link-based — the bot does not track them automatically. You can manually add PayPal donations via the CashApp flow if desired.</p>
+          </div>
+          <div class="panel panel-info">
+            <h4>CashApp Donations</h4>
+            <p>Users send money via CashApp, then use <span class="code-inline">/donated &lt;amount&gt;</span> to self-report. The donation enters a pending queue. Admins use <span class="code-inline">/confirm &lt;id&gt;</span> or <span class="code-inline">/deny &lt;id&gt;</span> (or the buttons above) to verify. Once confirmed, the bot announces the donation with a thermometer graphic in the announcement channel.</p>
+          </div>
+          <div class="panel panel-info">
+            <h4>Anonymous Donations</h4>
+            <p>Users can add <span class="code-inline">anonymous:true</span> to the <span class="code-inline">/donated</span> command to hide their name from the announcement. The admin can still see who donated in the pending queue and on this page.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleFundraiserEnabled() {
+      const track = document.getElementById('toggle-enabled');
+      const isActive = track.classList.toggle('active');
+      track.nextElementSibling.textContent = isActive ? 'Fundraiser Enabled' : 'Fundraiser Disabled';
+    }
+
+    async function saveFundraiserConfig() {
+      const enabled = document.getElementById('toggle-enabled').classList.contains('active');
+      const goalLabel = document.getElementById('fr-goal-label').value;
+      const goalAmount = parseFloat(document.getElementById('fr-goal-amount').value);
+      const announcementChannelId = document.getElementById('fr-channel-id').value.trim();
+      const paypalLink = document.getElementById('fr-paypal').value.trim();
+      const cashappTag = document.getElementById('fr-cashapp').value.trim();
+
+      if (!goalLabel) {
+        showToast('Goal label is required', 'error');
+        return;
+      }
+      if (isNaN(goalAmount) || goalAmount <= 0) {
+        showToast('Goal amount must be a positive number', 'error');
+        return;
+      }
+
+      showLoading(true);
+      try {
+        const res = await fetch('/api/fundraiser/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled, goalLabel, goalAmount, announcementChannelId, paypalLink, cashappTag }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Fundraiser configuration saved!', 'success');
+          await renderFundraiserPage();
+        } else {
+          showToast(data.error || 'Failed to save', 'error');
+        }
+      } catch (e) {
+        showToast('Failed to save configuration', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function approvePending(id) {
+      showLoading(true);
+      try {
+        const res = await fetch(`/api/fundraiser/pending/${id}/approve`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Donation approved!', 'success');
+          await renderFundraiserPage();
+        } else {
+          showToast(data.error || 'Approval failed', 'error');
+        }
+      } catch (e) {
+        showToast('Approval failed', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function denyPending(id) {
+      if (!confirm('Deny this pending donation?')) return;
+      showLoading(true);
+      try {
+        const res = await fetch(`/api/fundraiser/pending/${id}/deny`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Donation denied', 'success');
+          await renderFundraiserPage();
+        } else {
+          showToast(data.error || 'Denial failed', 'error');
+        }
+      } catch (e) {
+        showToast('Denial failed', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function resetFundraiserData() {
+      if (!confirm('Are you sure you want to reset ALL donation data? This cannot be undone!')) return;
+      if (!confirm('Really? This will delete all confirmed and pending donations.')) return;
+
+      showLoading(true);
+      try {
+        const res = await fetch('/api/fundraiser/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ confirm: true }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('All donation data has been reset', 'success');
+          await renderFundraiserPage();
+        } else {
+          showToast(data.error || 'Reset failed', 'error');
+        }
+      } catch (e) {
+        showToast('Reset failed', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     // ============================================================

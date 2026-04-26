@@ -1,7 +1,8 @@
-const { REST, Routes, SlashCommandBuilder } = require('discord.js');
+const { REST, Routes, SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 require('dotenv').config();
 
 const commands = [
+  // ---- Game Commands ----
   new SlashCommandBuilder()
     .setName('game')
     .setDescription('Start a new HALT Go game in this channel'),
@@ -13,6 +14,60 @@ const commands = [
   new SlashCommandBuilder()
     .setName('status')
     .setDescription('Check the status of the current game'),
+
+  // ---- Fundraiser Commands ----
+  new SlashCommandBuilder()
+    .setName('donate')
+    .setDescription('See how to donate to the current fundraiser'),
+
+  new SlashCommandBuilder()
+    .setName('fundraiser')
+    .setDescription('Check the current fundraiser progress'),
+
+  new SlashCommandBuilder()
+    .setName('donated')
+    .setDescription('Report a CashApp donation for admin verification')
+    .addNumberOption(option =>
+      option
+        .setName('amount')
+        .setDescription('The amount you donated (e.g., 10.00)')
+        .setRequired(true)
+        .setMinValue(0.01)
+    )
+    .addBooleanOption(option =>
+      option
+        .setName('anonymous')
+        .setDescription('Hide your name from the announcement? (default: false)')
+        .setRequired(false)
+    ),
+
+  new SlashCommandBuilder()
+    .setName('confirm')
+    .setDescription('Confirm a pending CashApp donation (admin only)')
+    .addStringOption(option =>
+      option
+        .setName('id')
+        .setDescription('The donation ID to confirm')
+        .setRequired(true)
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+  new SlashCommandBuilder()
+    .setName('deny')
+    .setDescription('Deny a pending CashApp donation (admin only)')
+    .addStringOption(option =>
+      option
+        .setName('id')
+        .setDescription('The donation ID to deny')
+        .setRequired(true)
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+  new SlashCommandBuilder()
+    .setName('pending')
+    .setDescription('View all pending CashApp donations (admin only)')
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
 ].map(cmd => cmd.toJSON());
 
 async function deployCommands() {

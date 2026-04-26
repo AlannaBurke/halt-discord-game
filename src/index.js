@@ -33,6 +33,19 @@ const {
   cleanupTempFiles,
 } = require('./ui/cardRenderer');
 
+// Fundraiser imports
+const fundraiser = require('./fundraiser/Fundraiser');
+const { generateThermometer, generateMiniThermometer } = require('./fundraiser/thermometer');
+const {
+  createDonateEmbed,
+  createFundraiserProgressEmbed,
+  createDonationAnnouncementEmbed,
+  createDonationReportedEmbed,
+  createDonationConfirmedEmbed,
+  createDonationDeniedEmbed,
+  createPendingDonationsEmbed,
+} = require('./fundraiser/fundraiserEmbeds');
+
 // Create Discord client
 const client = new Client({
   intents: [
@@ -97,6 +110,9 @@ client.once(Events.ClientReady, (c) => {
       console.log(`🎨 Loaded ${count} custom emojis from ${guild.name}`);
     }
   }
+
+  // Set up fundraiser event listener
+  setupFundraiserEvents();
 });
 
 // ============================================================
@@ -128,6 +144,7 @@ async function handleSlashCommand(interaction) {
   const { commandName } = interaction;
 
   switch (commandName) {
+    // Game commands
     case 'game':
       await handleGameCommand(interaction);
       break;
@@ -137,6 +154,27 @@ async function handleSlashCommand(interaction) {
     case 'status':
       await handleStatusCommand(interaction);
       break;
+
+    // Fundraiser commands
+    case 'donate':
+      await handleDonateCommand(interaction);
+      break;
+    case 'fundraiser':
+      await handleFundraiserCommand(interaction);
+      break;
+    case 'donated':
+      await handleDonatedCommand(interaction);
+      break;
+    case 'confirm':
+      await handleConfirmCommand(interaction);
+      break;
+    case 'deny':
+      await handleDenyCommand(interaction);
+      break;
+    case 'pending':
+      await handlePendingCommand(interaction);
+      break;
+
     default:
       await interaction.reply({ content: 'Unknown command!', flags: MessageFlags.Ephemeral });
   }
@@ -200,6 +238,170 @@ async function handleStatusCommand(interaction) {
     content: `**Game Status:** ${status.state}\n**Round:** ${status.currentRound} | **Phase:** ${status.currentPhase}\n**Players:**\n${playerList}`,
     flags: MessageFlags.Ephemeral,
   });
+}
+
+// ============================================================
+// /donate — Show donation options
+// ============================================================
+async function handleDonateCommand(interaction) {
+  if (!fundraiser.isEnabled) {
+    return interaction.reply({
+      content: '❌ No fundraiser is currently active.',
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const config = fundraiser.config;
+  const { embed, components } = createDonateEmbed(config);
+
+  await interaction.reply({
+    embeds: [embed],
+    components,
+  });
+}
+
+// ============================================================
+// /fundraiser — Show current progress
+// ============================================================
+async function handleFundraiserCommand(interaction) {
+  if (!fundraiser.isEnabled) {
+    return interaction.reply({
+      content: '❌ No fundraiser is currently active.',
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  await interaction.deferReply();
+
+  const status = fundraiser.getStatus();
+  const embed = createFundraiserProgressEmbed(status);
+
+  // Generate thermometer graphic
+  try {
+    const recentDonations = fundraiser.getRecentDonations(1);
+    const latest = recentDonations[0] || null;
+
+    const thermPath = await generateThermometer({
+      title: status.goalLabel,
+      goalAmount: status.goalAmount,
+      totalRaised: status.totalRaised,
+      currencySymbol: status.currencySymbol,
+      donorCount: status.donorCount,
+      donationCount: status.donationCount,
+      latestDonor: latest ? latest.username : null,
+      latestAmount: latest ? latest.amount : null,
+      isAnonymous: latest ? latest.anonymous : false,
+      filename: `therm_progress_${Date.now()}.png`,
+    });
+
+    if (thermPath) {
+      const attachment = new AttachmentBuilder(thermPath, { name: 'thermometer.png' });
+      embed.setImage('attachment://thermometer.png');
+      await interaction.editReply({
+        embeds: [embed],
+        files: [attachment],
+      });
+      return;
+    }
+  } catch (err) {
+    console.error('Failed to generate thermometer for /fundraiser:', err.message);
+  }
+
+  // Fallback: send without thermometer image
+  await interaction.editReply({ embeds: [embed] });
+}
+
+// ============================================================
+// /donated — Report a CashApp donation
+// ============================================================
+async function handleDonatedCommand(interaction) {
+  if (!fundraiser.isEnabled) {
+    return interaction.reply({
+      content: '❌ No fundraiser is currently active.',
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const config = fundraiser.config;
+  if (!config.cashappTag) {
+    return interaction.reply({
+      content: '❌ CashApp donations are not currently configured for this fundraiser.',
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const amount = interaction.options.getNumber('amount');
+  const anonymous = interaction.options.getBoolean('anonymous') ?? false;
+
+  if (amount <= 0) {
+    return interaction.reply({
+      content: '❌ Please enter a valid donation amount greater than $0.',
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const pending = fundraiser.addPendingDonation({
+    userId: interaction.user.id,
+    username: interaction.user.displayName || interaction.user.username,
+    amount,
+    anonymous,
+  });
+
+  const embed = createDonationReportedEmbed(pending, config.currencySymbol);
+  await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+}
+
+// ============================================================
+// /confirm — Admin confirms a pending CashApp donation
+// ============================================================
+async function handleConfirmCommand(interaction) {
+  const donationId = interaction.options.getString('id');
+  const adminUsername = interaction.user.displayName || interaction.user.username;
+
+  const donation = fundraiser.approvePending(donationId, adminUsername);
+
+  if (!donation) {
+    return interaction.reply({
+      content: `❌ No pending donation found with ID \`${donationId}\`. Use \`/pending\` to see all pending donations.`,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const config = fundraiser.config;
+  const embed = createDonationConfirmedEmbed(donation, config.currencySymbol);
+  await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+  // The 'donation' event on the fundraiser will handle the announcement
+}
+
+// ============================================================
+// /deny — Admin denies a pending CashApp donation
+// ============================================================
+async function handleDenyCommand(interaction) {
+  const donationId = interaction.options.getString('id');
+
+  const denied = fundraiser.denyPending(donationId);
+
+  if (!denied) {
+    return interaction.reply({
+      content: `❌ No pending donation found with ID \`${donationId}\`. Use \`/pending\` to see all pending donations.`,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const config = fundraiser.config;
+  const embed = createDonationDeniedEmbed(denied, config.currencySymbol);
+  await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+}
+
+// ============================================================
+// /pending — Admin views pending donations
+// ============================================================
+async function handlePendingCommand(interaction) {
+  const pendingDonations = fundraiser.getPendingDonations();
+  const config = fundraiser.config;
+  const embed = createPendingDonationsEmbed(pendingDonations, config.currencySymbol);
+  await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 }
 
 // ============================================================
@@ -368,6 +570,72 @@ async function getChannel(channelId) {
     console.error(`Failed to fetch channel ${channelId}:`, error.message);
     return null;
   }
+}
+
+// ============================================================
+// Fundraiser Event Handlers
+// ============================================================
+function setupFundraiserEvents() {
+  fundraiser.on('donation', async (donation) => {
+    try {
+      const config = fundraiser.config;
+      const channelId = config.announcementChannelId;
+      if (!channelId) {
+        console.log('Fundraiser: No announcement channel configured, skipping announcement.');
+        return;
+      }
+
+      const channel = await getChannel(channelId);
+      if (!channel) {
+        console.error(`Fundraiser: Could not fetch announcement channel ${channelId}`);
+        return;
+      }
+
+      const status = fundraiser.getStatus();
+      const embed = createDonationAnnouncementEmbed(donation, status);
+
+      // Generate thermometer graphic
+      try {
+        const thermPath = await generateThermometer({
+          title: status.goalLabel,
+          goalAmount: status.goalAmount,
+          totalRaised: status.totalRaised,
+          currencySymbol: status.currencySymbol,
+          donorCount: status.donorCount,
+          donationCount: status.donationCount,
+          latestDonor: donation.username,
+          latestAmount: donation.amount,
+          isAnonymous: donation.anonymous,
+          filename: `therm_announce_${Date.now()}.png`,
+        });
+
+        if (thermPath) {
+          const attachment = new AttachmentBuilder(thermPath, { name: 'thermometer.png' });
+          embed.setImage('attachment://thermometer.png');
+          await channel.send({ embeds: [embed], files: [attachment] });
+
+          // Clean up thermometer temp file after a delay
+          setTimeout(() => {
+            try {
+              const fs = require('fs');
+              if (fs.existsSync(thermPath)) fs.unlinkSync(thermPath);
+            } catch (e) { /* ignore */ }
+          }, 30000);
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to generate thermometer for announcement:', err.message);
+      }
+
+      // Fallback: send without thermometer
+      await channel.send({ embeds: [embed] });
+
+    } catch (error) {
+      console.error('Error in fundraiser donation handler:', error.message);
+    }
+  });
+
+  console.log('💝 Fundraiser event handlers registered');
 }
 
 // ============================================================
