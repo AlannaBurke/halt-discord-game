@@ -176,8 +176,8 @@ FUNDRAISER_GOAL_AMOUNT=500
 # FUNDRAISER_GOAL_LABEL: Title shown on the thermometer graphic
 FUNDRAISER_GOAL_LABEL=HALT Fundraiser
 
-# FUNDRAISER_PAYPAL_LINK: Direct link for PayPal donations
-FUNDRAISER_PAYPAL_LINK=https://paypal.me/yourlink
+# FUNDRAISER_PAYPAL_LINK: PayPal payment link (business donation page or paypal.me)
+FUNDRAISER_PAYPAL_LINK=https://www.paypal.com/ncp/payment/YOUR_BUTTON_ID
 
 # FUNDRAISER_CASHAPP_TAG: CashApp tag for manual donations
 FUNDRAISER_CASHAPP_TAG=$YourCashTag
