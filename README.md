@@ -223,6 +223,8 @@ When a donation is confirmed, the bot posts a celebration announcement with a th
 
 To enable the fundraiser, set `FUNDRAISER_ENABLED=true` in your `.env` and configure the goal amount, labels, and payment links. You can also manage everything from the **Fundraiser** page in the settings dashboard.
 
+For complete documentation on the fundraiser system, commands, and dashboard, see [FUNDRAISER.md](FUNDRAISER.md).
+
 ## Settings Dashboard (Optional)
 
 HALT Go includes a web-based settings dashboard with four pages:

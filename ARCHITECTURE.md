@@ -17,7 +17,11 @@ halt-discord-game/
 ├── src/
 │   ├── index.js                  # Bot entry point + settings server startup
 │   ├── commands/
-│   │   └── deploy-commands.js    # Slash command registration (/game, /help, /status)
+│   │   └── deploy-commands.js    # Slash command registration (/game, /help, /status, fundraiser cmds)
+│   ├── fundraiser/
+│   │   ├── Fundraiser.js         # Fundraiser engine (donations, config, persistence)
+│   │   ├── fundraiserEmbeds.js   # Fundraiser Discord embed builders
+│   │   └── thermometer.js        # Thermometer progress graphic generator
 │   ├── game/
 │   │   ├── GameManager.js        # Manages active games across channels
 │   │   ├── Game.js               # Single game instance (lobby, rounds, phases, computer player)
@@ -29,10 +33,10 @@ halt-discord-game/
 │   │   ├── buttons.js            # Button component builders (lobby, selection, computer toggle)
 │   │   └── cardRenderer.js       # Runtime card image compositing (hand, selection, gallery)
 │   ├── settings/
-│   │   ├── server.js             # Express settings dashboard (OAuth2, upload API, role check)
+│   │   ├── server.js             # Express settings dashboard (OAuth2, upload API, fundraiser API, role check)
 │   │   ├── cardPipeline.js       # Card regeneration pipeline (generates Discord-sized cards)
 │   │   └── public/
-│   │       └── index.html        # Settings dashboard SPA (gameplay, card manager, setup guide)
+│   │       └── index.html        # Settings dashboard SPA (gameplay, card manager, fundraiser, setup guide)
 │   └── utils/
 │       └── constants.js          # Card types, scoring tables, weights, game config
 ├── assets/
@@ -78,6 +82,7 @@ halt-discord-game/
 - **Event-driven game engine** — `Game` emits events (`roundStart`, `phaseStart`, `gameEnd`, etc.) that the bot listens to for Discord interactions
 - **Computer player** — HALTbot is a special player flagged as `isComputer: true`, skipping all DM interactions
 - **Optional settings dashboard** — Runs alongside the bot on a configurable port, disabled by default
+- **Fundraiser Module** — A built-in donation tracking system with self-reporting and admin verification flows, persisted to a local JSON file (`data/fundraiser.json`) for simplicity without requiring a database.
 
 ## Module Relationships
 
@@ -90,6 +95,10 @@ index.js
   ├── Scoring (used by Game)
   ├── Embeds + Buttons (UI layer)
   ├── CardRenderer (image compositing)
+  ├── Fundraiser (singleton)
+  │     ├── Thermometer (image generation)
+  │     └── FundraiserEmbeds (UI layer)
   └── Settings Server (optional)
-        └── CardPipeline (regeneration)
+        ├── CardPipeline (regeneration)
+        └── Fundraiser API
 ```
