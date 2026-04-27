@@ -21,7 +21,8 @@ halt-discord-game/
 │   ├── fundraiser/
 │   │   ├── Fundraiser.js         # Fundraiser engine (donations, config, persistence)
 │   │   ├── fundraiserEmbeds.js   # Fundraiser Discord embed builders
-│   │   └── thermometer.js        # Thermometer progress graphic generator
+│   │   ├── thermometer.js        # Thermometer progress graphic generator
+│   │   └── paypalWebhook.js      # PayPal webhook handler (auto-track donations)
 │   ├── game/
 │   │   ├── GameManager.js        # Manages active games across channels
 │   │   ├── Game.js               # Single game instance (lobby, rounds, phases, computer player)
@@ -83,6 +84,7 @@ halt-discord-game/
 - **Computer player** — HALTbot is a special player flagged as `isComputer: true`, skipping all DM interactions
 - **Optional settings dashboard** — Runs alongside the bot on a configurable port, disabled by default
 - **Fundraiser Module** — A built-in donation tracking system with self-reporting and admin verification flows, persisted to a local JSON file (`data/fundraiser.json`) for simplicity without requiring a database.
+- **PayPal Webhook Integration** — Optional auto-tracking of PayPal donations via the `PAYMENT.CAPTURE.COMPLETED` webhook event. Uses PayPal's postback verification method to avoid extra crypto dependencies. The webhook endpoint is mounted before `express.json()` to preserve the raw request body for signature verification.
 
 ## Module Relationships
 
@@ -100,5 +102,6 @@ index.js
   │     └── FundraiserEmbeds (UI layer)
   └── Settings Server (optional)
         ├── CardPipeline (regeneration)
-        └── Fundraiser API
+        ├── Fundraiser API
+        └── PayPal Webhook (/webhooks/paypal)
 ```

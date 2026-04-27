@@ -17,6 +17,7 @@ const fetch = require('node-fetch');
 const { CARD_INFO, CARD_TYPES } = require('../utils/constants');
 const { regenerateCard } = require('./cardPipeline');
 const fundraiser = require('../fundraiser/Fundraiser');
+const { createWebhookHandler } = require('../fundraiser/paypalWebhook');
 
 // Paths
 const ASSETS_DIR = path.join(__dirname, '../../assets/cards');
@@ -80,6 +81,17 @@ function createSettingsApp(config) {
 
   // Serve emoji images
   app.use('/emojis', express.static(EMOJIS_DIR));
+
+  // ============================================================
+  // PayPal Webhook (must be BEFORE express.json() — needs raw body)
+  // ============================================================
+  if (process.env.PAYPAL_WEBHOOK_ID) {
+    app.post('/webhooks/paypal',
+      express.raw({ type: 'application/json' }),
+      createWebhookHandler(fundraiser)
+    );
+    console.log('💙 PayPal webhook endpoint active at /webhooks/paypal');
+  }
 
   // JSON body parser
   app.use(express.json());

@@ -45,10 +45,20 @@ Players join a lobby, then draft adorable animal cards over **3 rounds** of **7 
 
 HALT Bot includes a built-in fundraiser system that lets your community donate to a cause and track progress with a visual thermometer graphic. The fundraiser supports two donation methods:
 
-- **PayPal** — Users click a link to donate directly. The bot provides the link via `/donate`.
+- **PayPal** — Users click a link to donate directly via `/donate`. If PayPal webhooks are configured, donations are **automatically detected and recorded** when the payment completes.
 - **CashApp** — Users send money via CashApp, then self-report with `/donated <amount>`. Admins verify pending donations with `/confirm` or `/deny`.
 
-When a donation is confirmed, the bot posts a celebration announcement with a thermometer progress graphic in the configured announcement channel.
+When a donation is recorded (automatically via PayPal webhook or manually confirmed by an admin), the bot posts a celebration announcement with a thermometer progress graphic in the configured announcement channel.
+
+### PayPal Auto-Tracking (Optional)
+
+By default, the `/donate` command simply opens a PayPal link. To **automatically track** PayPal donations, you can configure PayPal webhooks. This requires:
+
+1. A PayPal REST API app (free to create at [developer.paypal.com](https://developer.paypal.com/dashboard/applications))
+2. A publicly accessible HTTPS URL for your server (use a reverse proxy or tunnel like ngrok/Cloudflare Tunnel)
+3. Three additional `.env` variables: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, and `PAYPAL_WEBHOOK_ID`
+
+See the [PayPal Webhook Setup](#paypal-webhook-setup) section below and [FUNDRAISER.md](FUNDRAISER.md) for full details.
 
 For complete documentation on the fundraiser system, commands, and dashboard, see [FUNDRAISER.md](FUNDRAISER.md).
 
@@ -185,6 +195,24 @@ FUNDRAISER_CASHAPP_TAG=$YourCashTag
 # FUNDRAISER_ANNOUNCEMENT_CHANNEL_ID: Right-click channel > Copy Channel ID
 # Where confirmed donation celebrations are posted
 FUNDRAISER_ANNOUNCEMENT_CHANNEL_ID=your_channel_id
+
+# ============================================================
+# PayPal Webhook — Auto-Track Donations (Optional)
+# ============================================================
+# Without these, PayPal donations are not tracked automatically.
+# See the PayPal Webhook Setup section below for instructions.
+
+# PAYPAL_CLIENT_ID: From PayPal Developer Dashboard > Your App > Client ID
+PAYPAL_CLIENT_ID=your_paypal_client_id
+
+# PAYPAL_CLIENT_SECRET: From PayPal Developer Dashboard > Your App > Secret
+PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+
+# PAYPAL_WEBHOOK_ID: From PayPal Developer Dashboard > Your App > Webhooks
+PAYPAL_WEBHOOK_ID=your_webhook_id
+
+# PAYPAL_MODE: "live" for production, "sandbox" for testing
+PAYPAL_MODE=live
 ```
 
 ### Step 5: Deploy Commands and Start
@@ -199,7 +227,42 @@ pnpm start
 
 ---
 
-## 5. Custom Discord Emojis (Optional)
+## 5. PayPal Webhook Setup (Optional)
+
+To automatically track PayPal donations (instead of only providing a donation link), follow these steps:
+
+### Step A: Create a PayPal REST API App
+
+1. Go to [developer.paypal.com/dashboard/applications](https://developer.paypal.com/dashboard/applications)
+2. Click **Create App** and give it a name (e.g., "HALT Bot")
+3. Copy the **Client ID** — this is your `PAYPAL_CLIENT_ID`
+4. Click **Show** next to Secret and copy it — this is your `PAYPAL_CLIENT_SECRET`
+
+### Step B: Set Up a Webhook
+
+1. On the same app page, scroll to the **Webhooks** section
+2. Click **Add Webhook**
+3. Enter your webhook URL: `https://yourdomain.com/webhooks/paypal`
+   - This must be HTTPS on port 443. If you're running locally, use a tunnel like [ngrok](https://ngrok.com) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
+   - The path `/webhooks/paypal` is served by the settings dashboard (same Express server on `SETTINGS_PORT`)
+4. Under **Events**, subscribe to: **PAYMENT.CAPTURE.COMPLETED**
+5. Click **Save**
+6. Copy the **Webhook ID** shown in the webhook list — this is your `PAYPAL_WEBHOOK_ID`
+
+### Step C: Add to .env
+
+```env
+PAYPAL_CLIENT_ID=AaBbCcDd...
+PAYPAL_CLIENT_SECRET=EeFfGgHh...
+PAYPAL_WEBHOOK_ID=0NH55953DH663215D
+PAYPAL_MODE=live
+```
+
+Restart the bot. You should see `💙 PayPal webhook endpoint active at /webhooks/paypal` in the console. When someone completes a PayPal payment, the bot will automatically record it and post an announcement.
+
+---
+
+## 6. Custom Discord Emojis (Optional)
 
 HALT Bot includes custom emoji images for the HALT Go minigame. When uploaded to your server, the bot automatically detects them and uses them everywhere!
 
@@ -222,7 +285,7 @@ Restart the bot, and you should see `Loaded 9 custom emojis` in the console.
 
 ---
 
-## 6. Settings Dashboard
+## 7. Settings Dashboard
 
 HALT Bot includes a web-based settings dashboard (if `SETTINGS_ENABLED=true`). It features four pages:
 
@@ -233,7 +296,7 @@ HALT Bot includes a web-based settings dashboard (if `SETTINGS_ENABLED=true`). I
 
 ---
 
-## Project Structure
+## 8. Project Structure
 
 ```
 halt-discord-game/
@@ -257,7 +320,7 @@ halt-discord-game/
 └── README.md
 ```
 
-## Contributing & Support
+## 9. Contributing & Support
 
 Found a bug or have a feature idea? [Open an issue on GitHub](https://github.com/AlannaBurke/halt-discord-game/issues).
 

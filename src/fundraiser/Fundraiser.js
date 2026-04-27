@@ -105,7 +105,7 @@ class Fundraiser extends EventEmitter {
    * @param {string} [opts.confirmedBy] - Admin who confirmed (for CashApp)
    * @returns {Object} donation record
    */
-  addDonation({ userId, username, amount, method, anonymous = false, confirmedBy = null }) {
+  addDonation({ userId, username, amount, method, anonymous = false, confirmedBy = null, paypalCaptureId = null }) {
     const donation = {
       id: this._generateId(),
       userId,
@@ -116,6 +116,11 @@ class Fundraiser extends EventEmitter {
       confirmedBy,
       timestamp: new Date().toISOString(),
     };
+
+    // Store PayPal capture ID for deduplication
+    if (paypalCaptureId) {
+      donation.paypalCaptureId = paypalCaptureId;
+    }
 
     this._data.donations.push(donation);
     this._save();

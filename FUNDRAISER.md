@@ -4,7 +4,7 @@ The HALT Bot includes a built-in fundraiser module designed to help rescue organ
 
 ## Features
 
-- **Dual Donation Methods**: Support for direct link-based donations (e.g., PayPal) and self-reported manual verification (e.g., CashApp).
+- **Dual Donation Methods**: Support for PayPal (with optional auto-tracking via webhooks) and CashApp (self-reported with admin verification).
 - **Thermometer Graphics**: Automatically generates cute, colorful progress thermometers showing the goal, current total, and recent donors.
 - **Admin Verification**: Pending CashApp donations enter a queue where admins can approve or deny them.
 - **Auto-Announcements**: When a donation is confirmed, the bot automatically posts a celebration message with the thermometer graphic in a designated channel.
@@ -23,6 +23,17 @@ The fundraiser is configured via environment variables in the `.env` file, and c
 | `FUNDRAISER_PAYPAL_LINK` | URL for direct donations. Shown as a button when users run `/donate`. |
 | `FUNDRAISER_CASHAPP_TAG` | CashApp tag (e.g., `$YourTag`). Shown as instructions in `/donate`. |
 | `FUNDRAISER_ANNOUNCEMENT_CHANNEL_ID` | Discord channel ID where confirmed donation celebrations are posted. |
+
+### PayPal Webhook Variables (Optional)
+
+These enable automatic tracking of PayPal donations. Without them, PayPal is a direct link only.
+
+| Variable | Description |
+|----------|-------------|
+| `PAYPAL_CLIENT_ID` | REST API Client ID from [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/applications). |
+| `PAYPAL_CLIENT_SECRET` | REST API Secret from the same app page. |
+| `PAYPAL_WEBHOOK_ID` | Webhook ID from the app's webhook subscription. |
+| `PAYPAL_MODE` | `live` (default) for production or `sandbox` for testing. |
 
 ## Commands
 
@@ -76,9 +87,28 @@ Donation data is stored locally in `data/fundraiser.json`. The structure include
 
 ### Event Flow
 
+**CashApp (manual verification):**
+
 1. User runs `/donated 25`.
 2. Bot calls `fundraiser.addPendingDonation()`. Data is saved to `fundraiser.json`.
 3. Admin runs `/confirm <id>` (or clicks Approve in dashboard).
 4. Bot calls `fundraiser.approvePending()`. The pending record is moved to the `donations` array.
 5. `Fundraiser.js` emits a `donation` event.
 6. `index.js` listens for the `donation` event, generates a new thermometer graphic, and posts it to the `FUNDRAISER_ANNOUNCEMENT_CHANNEL_ID`.
+
+**PayPal (automatic via webhook):**
+
+1. User clicks the PayPal link from `/donate` and completes payment on PayPal.
+2. PayPal sends a `PAYMENT.CAPTURE.COMPLETED` webhook POST to `/webhooks/paypal`.
+3. The webhook handler (`paypalWebhook.js`) verifies the signature by posting back to PayPal's `verify-webhook-signature` API.
+4. If verified, the handler extracts the amount and payer info, checks for duplicate capture IDs, and calls `fundraiser.addDonation()` with `method: 'paypal'`.
+5. `Fundraiser.js` emits a `donation` event (same as CashApp flow).
+6. `index.js` posts the announcement with thermometer graphic.
+
+### PayPal Webhook Architecture
+
+The webhook endpoint is mounted on the settings dashboard Express server at `/webhooks/paypal`. It is registered **before** the `express.json()` middleware so it can access the raw request body (required for signature verification). The endpoint uses PayPal's postback verification method, which sends the event data back to PayPal to confirm authenticity, avoiding additional crypto dependencies.
+
+Key file: `src/fundraiser/paypalWebhook.js`
+
+PayPal requires webhooks to be delivered over HTTPS on port 443. In production, use a reverse proxy (nginx, Caddy) or tunnel (ngrok, Cloudflare Tunnel) to forward HTTPS traffic to the `SETTINGS_PORT`.
