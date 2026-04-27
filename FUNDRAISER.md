@@ -4,7 +4,8 @@ The HALT Bot includes a built-in fundraiser module designed to help rescue organ
 
 ## Features
 
-- **Dual Donation Methods**: Support for PayPal (with optional auto-tracking via webhooks) and CashApp (self-reported with admin verification).
+- **Triple Donation Methods**: Support for PayPal, CashApp, and Patreon. PayPal and Patreon support optional auto-tracking via webhooks, while CashApp and Patreon support self-reporting with admin verification.
+- **Dual Goals**: Tracks both a dollar goal (from all sources) and a Patreon patron count goal simultaneously.
 - **Thermometer Graphics**: Automatically generates cute, colorful progress thermometers showing the goal, current total, and recent donors.
 - **Admin Verification**: Pending CashApp donations enter a queue where admins can approve or deny them.
 - **Auto-Announcements**: When a donation is confirmed, the bot automatically posts a celebration message with the thermometer graphic in a designated channel.
@@ -22,9 +23,11 @@ The fundraiser is configured via environment variables in the `.env` file, and c
 | `FUNDRAISER_GOAL_LABEL` | The title shown on the thermometer graphic (e.g., `HALT Fundraiser`). |
 | `FUNDRAISER_PAYPAL_LINK` | URL for direct donations. Shown as a button when users run `/donate`. |
 | `FUNDRAISER_CASHAPP_TAG` | CashApp tag (e.g., `$YourTag`). Shown as instructions in `/donate`. |
+| `FUNDRAISER_PATREON_LINK` | Direct link to your Patreon creator page. |
+| `FUNDRAISER_PATREON_PLEDGE_GOAL` | Target number of patrons for the fundraiser (numeric). |
 | `FUNDRAISER_ANNOUNCEMENT_CHANNEL_ID` | Discord channel ID where confirmed donation celebrations are posted. |
 
-### PayPal Webhook Variables (Optional)
+### Webhook Variables (Optional)
 
 These enable automatic tracking of PayPal donations. Without them, PayPal is a direct link only.
 
@@ -34,6 +37,7 @@ These enable automatic tracking of PayPal donations. Without them, PayPal is a d
 | `PAYPAL_CLIENT_SECRET` | REST API Secret from the same app page. |
 | `PAYPAL_WEBHOOK_ID` | Webhook ID from the app's webhook subscription. |
 | `PAYPAL_MODE` | `live` (default) for production or `sandbox` for testing. |
+| `PATREON_WEBHOOK_SECRET` | Webhook Secret from [Patreon Webhooks](https://www.patreon.com/portal/registration/register-webhooks). |
 
 ## Commands
 
@@ -45,17 +49,23 @@ These enable automatic tracking of PayPal donations. Without them, PayPal is a d
   Displays the current fundraiser progress, including the generated thermometer graphic and total raised.
 - `/donated <amount> [anonymous]`
   Used to self-report a CashApp donation. The donation enters the pending queue for admin verification. If `anonymous` is true, the user's name will not be shown in the public announcement.
+- `/patron <pledge> [extra] [anonymous]`
+  Used to self-report a new Patreon signup. `pledge` is the monthly tier amount, and `extra` is any additional one-time donation made. Enters a pending queue for admin verification.
 
 ### Admin Commands
 
 *Note: Admin commands require the user to have the "Manage Server" (Manage Guild) permission in Discord.*
 
 - `/pending`
-  Lists all unverified CashApp donations with their IDs and amounts.
+  Lists all unverified CashApp donations and Patreon pledges with their IDs and amounts.
 - `/confirm <id>`
-  Approves a pending donation. This adds the amount to the total raised and triggers an announcement in the configured channel.
+  Approves a pending CashApp donation. This adds the amount to the total raised and triggers an announcement in the configured channel.
 - `/deny <id>`
-  Rejects a pending donation. It is removed from the queue and does not count toward the total.
+  Rejects a pending CashApp donation. It is removed from the queue and does not count toward the total.
+- `/confirmpatron <id>`
+  Approves a pending Patreon pledge. This increments the patron count, adds any extra donation to the dollar total, and triggers a Patreon announcement.
+- `/denypatron <id>`
+  Rejects a pending Patreon pledge.
 
 ## Web Dashboard
 
@@ -64,9 +74,9 @@ If the Settings Dashboard is enabled (`SETTINGS_ENABLED=true`), admins can acces
 The dashboard provides:
 1. **Live Stats**: View total raised, goal amount, donor count, and a visual progress bar.
 2. **Configuration**: Toggle the fundraiser on/off, update the goal amount, label, and payment links without restarting the bot.
-3. **Pending Queue**: Approve or deny pending CashApp donations with a single click.
-4. **Donation History**: View a list of the 10 most recent confirmed donations.
-5. **Danger Zone**: Reset all donation data (clears both confirmed and pending donations).
+3. **Pending Queue**: Approve or deny pending CashApp donations and Patreon pledges with a single click.
+4. **Donation History**: View a list of the most recent confirmed donations and Patreon signups.
+5. **Danger Zone**: Reset all donation data (clears both confirmed and pending records).
 
 ## Technical Implementation
 
@@ -84,6 +94,8 @@ Donation data is stored locally in `data/fundraiser.json`. The structure include
 - `config`: Runtime configuration (overrides `.env` defaults).
 - `donations`: Array of confirmed donation objects.
 - `pendingDonations`: Array of unverified CashApp donations.
+- `patreonPledges`: Array of confirmed Patreon pledges.
+- `pendingPatreonPledges`: Array of unverified Patreon pledges.
 
 ### Event Flow
 
@@ -105,10 +117,13 @@ Donation data is stored locally in `data/fundraiser.json`. The structure include
 5. `Fundraiser.js` emits a `donation` event (same as CashApp flow).
 6. `index.js` posts the announcement with thermometer graphic.
 
-### PayPal Webhook Architecture
+### Webhook Architecture
 
-The webhook endpoint is mounted on the settings dashboard Express server at `/webhooks/paypal`. It is registered **before** the `express.json()` middleware so it can access the raw request body (required for signature verification). The endpoint uses PayPal's postback verification method, which sends the event data back to PayPal to confirm authenticity, avoiding additional crypto dependencies.
+The webhook endpoints are mounted on the settings dashboard Express server at `/webhooks/paypal` and `/webhooks/patreon`. They are registered **before** the `express.json()` middleware so they can access the raw request body (required for signature verification). 
 
-Key file: `src/fundraiser/paypalWebhook.js`
+- **PayPal**: Uses the postback verification method, which sends the event data back to PayPal to confirm authenticity, avoiding additional crypto dependencies.
+- **Patreon**: Uses HMAC-MD5 signature verification with the shared secret provided in the `.env` file.
 
-PayPal requires webhooks to be delivered over HTTPS on port 443. In production, use a reverse proxy (nginx, Caddy) or tunnel (ngrok, Cloudflare Tunnel) to forward HTTPS traffic to the `SETTINGS_PORT`.
+Key files: `src/fundraiser/paypalWebhook.js` and `src/fundraiser/patreonWebhook.js`
+
+Both platforms require webhooks to be delivered over HTTPS on port 443. In production, use a reverse proxy (nginx, Caddy) or tunnel (ngrok, Cloudflare Tunnel) to forward HTTPS traffic to the `SETTINGS_PORT`.

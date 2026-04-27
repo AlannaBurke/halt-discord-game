@@ -18,6 +18,7 @@ const { CARD_INFO, CARD_TYPES } = require('../utils/constants');
 const { regenerateCard } = require('./cardPipeline');
 const fundraiser = require('../fundraiser/Fundraiser');
 const { createWebhookHandler } = require('../fundraiser/paypalWebhook');
+const { processPatreonWebhook } = require('../fundraiser/patreonWebhook');
 
 // Paths
 const ASSETS_DIR = path.join(__dirname, '../../assets/cards');
@@ -91,6 +92,28 @@ function createSettingsApp(config) {
       createWebhookHandler(fundraiser)
     );
     console.log('💙 PayPal webhook endpoint active at /webhooks/paypal');
+  }
+
+  // Patreon Webhook (must also be BEFORE express.json() — needs raw body)
+  if (process.env.PATREON_WEBHOOK_SECRET) {
+    app.post('/webhooks/patreon',
+      express.raw({ type: 'application/json' }),
+      (req, res) => {
+        const result = processPatreonWebhook({
+          rawBody: req.body,
+          headers: req.headers,
+          fundraiser,
+        });
+
+        if (result.success) {
+          res.status(200).json({ message: result.message });
+        } else {
+          console.error('[Patreon Webhook] Rejected:', result.message);
+          res.status(400).json({ error: result.message });
+        }
+      }
+    );
+    console.log('🧡 Patreon webhook endpoint active at /webhooks/patreon');
   }
 
   // JSON body parser
@@ -322,6 +345,8 @@ function createSettingsApp(config) {
     if (paypalLink !== undefined) updates.paypalLink = String(paypalLink);
     if (cashappTag !== undefined) updates.cashappTag = String(cashappTag);
     if (announcementChannelId !== undefined) updates.announcementChannelId = String(announcementChannelId);
+    if (req.body.patreonLink !== undefined) updates.patreonLink = String(req.body.patreonLink);
+    if (req.body.patreonPledgeGoal !== undefined && req.body.patreonPledgeGoal !== null) updates.patreonPledgeGoal = parseInt(req.body.patreonPledgeGoal) || 0;
 
     const newConfig = fundraiser.updateConfig(updates);
     res.json({ success: true, config: newConfig });
@@ -357,6 +382,41 @@ function createSettingsApp(config) {
 
     if (!denied) {
       return res.status(404).json({ error: 'Pending donation not found' });
+    }
+
+    res.json({ success: true, denied });
+  });
+
+  // Get Patreon pledges (confirmed)
+  app.get('/api/fundraiser/patreon', requireAuth, (req, res) => {
+    const pledges = fundraiser.getPatreonPledges();
+    res.json({ pledges });
+  });
+
+  // Get pending Patreon pledges
+  app.get('/api/fundraiser/patreon/pending', requireAuth, (req, res) => {
+    const pending = fundraiser.getPendingPatreonPledges();
+    res.json({ pending });
+  });
+
+  // Approve a pending Patreon pledge
+  app.post('/api/fundraiser/patreon/pending/:id/approve', requireAuth, (req, res) => {
+    const adminUsername = req.session.user.globalName || req.session.user.username;
+    const pledge = fundraiser.approvePatreonPledge(req.params.id, adminUsername);
+
+    if (!pledge) {
+      return res.status(404).json({ error: 'Pending Patreon pledge not found' });
+    }
+
+    res.json({ success: true, pledge });
+  });
+
+  // Deny a pending Patreon pledge
+  app.post('/api/fundraiser/patreon/pending/:id/deny', requireAuth, (req, res) => {
+    const denied = fundraiser.denyPatreonPledge(req.params.id);
+
+    if (!denied) {
+      return res.status(404).json({ error: 'Pending Patreon pledge not found' });
     }
 
     res.json({ success: true, denied });

@@ -1,8 +1,17 @@
 /**
  * HALT Bot Fundraiser Module
  *
- * Manages donation tracking, goal progress, and persistence.
- * Stores data in a local JSON file for simplicity.
+ * Manages donation tracking, Patreon pledge tracking, goal progress,
+ * and persistence. Stores data in a local JSON file for simplicity.
+ *
+ * Supports three donation methods:
+ *   - PayPal (auto-tracked via webhook, or manual)
+ *   - CashApp (self-reported, admin-verified)
+ *   - Patreon (self-reported, admin-verified, or auto-tracked via webhook)
+ *
+ * Tracks two goals simultaneously:
+ *   - Dollar goal: total donations raised across all methods
+ *   - Patreon pledge goal: number of new Patreon signups
  */
 
 const fs = require('fs');
@@ -19,6 +28,8 @@ const DEFAULT_CONFIG = {
   goalLabel: "Hero & Ziggy's Birthday Fundraiser",
   paypalLink: '',
   cashappTag: '',
+  patreonLink: '',
+  patreonPledgeGoal: 0,        // 0 = pledge goal disabled
   announcementChannelId: '',
   currency: 'USD',
   currencySymbol: '$',
@@ -46,11 +57,12 @@ class Fundraiser extends EventEmitter {
       if (fs.existsSync(DATA_FILE)) {
         const raw = fs.readFileSync(DATA_FILE, 'utf-8');
         const data = JSON.parse(raw);
-        // Merge with defaults for any missing fields
         return {
           config: { ...DEFAULT_CONFIG, ...data.config },
           donations: data.donations || [],
           pendingDonations: data.pendingDonations || [],
+          patreonPledges: data.patreonPledges || [],
+          pendingPatreonPledges: data.pendingPatreonPledges || [],
         };
       }
     } catch (err) {
@@ -61,6 +73,8 @@ class Fundraiser extends EventEmitter {
       config: { ...DEFAULT_CONFIG },
       donations: [],
       pendingDonations: [],
+      patreonPledges: [],
+      pendingPatreonPledges: [],
     };
   }
 
@@ -91,18 +105,19 @@ class Fundraiser extends EventEmitter {
   }
 
   // ============================================================
-  // Donations
+  // Donations (PayPal, CashApp, Patreon additional)
   // ============================================================
 
   /**
-   * Record a confirmed donation
+   * Record a confirmed donation (any method)
    * @param {Object} opts
-   * @param {string} opts.userId - Discord user ID
+   * @param {string} opts.userId - Discord user ID or external ID
    * @param {string} opts.username - Display name
    * @param {number} opts.amount - Donation amount
-   * @param {string} opts.method - 'paypal' or 'cashapp'
+   * @param {string} opts.method - 'paypal', 'cashapp', or 'patreon'
    * @param {boolean} opts.anonymous - Whether to hide the donor name
-   * @param {string} [opts.confirmedBy] - Admin who confirmed (for CashApp)
+   * @param {string} [opts.confirmedBy] - Admin who confirmed
+   * @param {string} [opts.paypalCaptureId] - PayPal capture ID for dedup
    * @returns {Object} donation record
    */
   addDonation({ userId, username, amount, method, anonymous = false, confirmedBy = null, paypalCaptureId = null }) {
@@ -117,7 +132,6 @@ class Fundraiser extends EventEmitter {
       timestamp: new Date().toISOString(),
     };
 
-    // Store PayPal capture ID for deduplication
     if (paypalCaptureId) {
       donation.paypalCaptureId = paypalCaptureId;
     }
@@ -130,15 +144,15 @@ class Fundraiser extends EventEmitter {
   }
 
   /**
-   * Submit a pending CashApp donation for admin verification
+   * Submit a pending donation for admin verification (CashApp or Patreon additional)
    */
-  addPendingDonation({ userId, username, amount, anonymous = false, note = '' }) {
+  addPendingDonation({ userId, username, amount, method = 'cashapp', anonymous = false, note = '' }) {
     const pending = {
       id: this._generateId(),
       userId,
       username,
       amount: parseFloat(amount),
-      method: 'cashapp',
+      method,
       anonymous,
       note,
       timestamp: new Date().toISOString(),
@@ -163,7 +177,7 @@ class Fundraiser extends EventEmitter {
       userId: pending.userId,
       username: pending.username,
       amount: pending.amount,
-      method: 'cashapp',
+      method: pending.method,
       anonymous: pending.anonymous,
       confirmedBy: adminUsername,
     });
@@ -183,6 +197,155 @@ class Fundraiser extends EventEmitter {
     return denied;
   }
 
+  // ============================================================
+  // Patreon Pledges
+  // ============================================================
+
+  /**
+   * Record a confirmed Patreon pledge
+   * @param {Object} opts
+   * @param {string} opts.userId - Discord user ID or external ID
+   * @param {string} opts.username - Display name
+   * @param {number} opts.pledgeAmountCents - Monthly pledge in cents
+   * @param {number} [opts.additionalDonation] - One-time extra donation
+   * @param {boolean} opts.anonymous - Whether to hide the name
+   * @param {string} [opts.confirmedBy] - Admin who confirmed
+   * @param {string} [opts.patreonMemberId] - Patreon member ID for dedup
+   * @returns {Object} pledge record
+   */
+  addPatreonPledge({ userId, username, pledgeAmountCents, additionalDonation = 0, anonymous = false, confirmedBy = null, patreonMemberId = null }) {
+    const pledge = {
+      id: this._generateId(),
+      userId,
+      username,
+      pledgeAmountCents: parseInt(pledgeAmountCents) || 0,
+      pledgeAmountDollars: (parseInt(pledgeAmountCents) || 0) / 100,
+      additionalDonation: parseFloat(additionalDonation) || 0,
+      anonymous,
+      confirmedBy,
+      timestamp: new Date().toISOString(),
+    };
+
+    if (patreonMemberId) {
+      pledge.patreonMemberId = patreonMemberId;
+    }
+
+    this._data.patreonPledges.push(pledge);
+    this._save();
+
+    // If there's an additional donation, also record it as a regular donation
+    if (pledge.additionalDonation > 0) {
+      this.addDonation({
+        userId,
+        username,
+        amount: pledge.additionalDonation,
+        method: 'patreon',
+        anonymous,
+        confirmedBy,
+      });
+    }
+
+    this.emit('patreonPledge', pledge);
+    return pledge;
+  }
+
+  /**
+   * Submit a pending Patreon pledge for admin verification
+   */
+  addPendingPatreonPledge({ userId, username, pledgeAmountCents, pledgeAmountDollars, additionalDonation = 0, anonymous = false }) {
+    // Accept either dollars (self-report) or cents (webhook)
+    let dollars;
+    if (pledgeAmountDollars !== undefined && pledgeAmountDollars !== null) {
+      dollars = parseFloat(pledgeAmountDollars) || 0;
+    } else {
+      dollars = (parseInt(pledgeAmountCents) || 0) / 100;
+    }
+    const cents = Math.round(dollars * 100);
+
+    const pending = {
+      id: this._generateId(),
+      userId,
+      username,
+      pledgeAmountCents: cents,
+      pledgeAmountDollars: dollars,
+      additionalDonation: parseFloat(additionalDonation) || 0,
+      anonymous,
+      timestamp: new Date().toISOString(),
+    };
+
+    this._data.pendingPatreonPledges.push(pending);
+    this._save();
+
+    this.emit('pendingPatreonPledge', pending);
+    return pending;
+  }
+
+  /**
+   * Approve a pending Patreon pledge (admin action)
+   */
+  approvePatreonPledge(pendingId, adminUsername) {
+    const idx = this._data.pendingPatreonPledges.findIndex(p => p.id === pendingId);
+    if (idx === -1) return null;
+
+    const pending = this._data.pendingPatreonPledges.splice(idx, 1)[0];
+    const pledge = this.addPatreonPledge({
+      userId: pending.userId,
+      username: pending.username,
+      pledgeAmountCents: pending.pledgeAmountCents,
+      additionalDonation: pending.additionalDonation,
+      anonymous: pending.anonymous,
+      confirmedBy: adminUsername,
+    });
+
+    return pledge;
+  }
+
+  /**
+   * Deny a pending Patreon pledge (admin action)
+   */
+  denyPatreonPledge(pendingId) {
+    const idx = this._data.pendingPatreonPledges.findIndex(p => p.id === pendingId);
+    if (idx === -1) return null;
+
+    const denied = this._data.pendingPatreonPledges.splice(idx, 1)[0];
+    this._save();
+    return denied;
+  }
+
+  /**
+   * Get all confirmed Patreon pledges
+   */
+  getPatreonPledges() {
+    return [...this._data.patreonPledges];
+  }
+
+  /**
+   * Get all pending Patreon pledges
+   */
+  getPendingPatreonPledges() {
+    return [...this._data.pendingPatreonPledges];
+  }
+
+  /**
+   * Get the total number of confirmed Patreon pledges
+   */
+  getPatreonPledgeCount() {
+    return this._data.patreonPledges.length;
+  }
+
+  /**
+   * Get Patreon pledge goal progress as a percentage (0-100, can exceed 100)
+   */
+  getPatreonProgress() {
+    const goal = this._data.config.patreonPledgeGoal;
+    if (goal <= 0) return 0;
+    return (this.getPatreonPledgeCount() / goal) * 100;
+  }
+
+  // ============================================================
+  // Aggregated Queries
+  // ============================================================
+
   /**
    * Get all confirmed donations
    */
@@ -191,21 +354,21 @@ class Fundraiser extends EventEmitter {
   }
 
   /**
-   * Get all pending donations
+   * Get all pending donations (CashApp + Patreon additional)
    */
   getPendingDonations() {
     return [...this._data.pendingDonations];
   }
 
   /**
-   * Get the total amount raised
+   * Get the total amount raised (all methods)
    */
   getTotalRaised() {
     return this._data.donations.reduce((sum, d) => sum + d.amount, 0);
   }
 
   /**
-   * Get the number of unique donors
+   * Get the number of unique donors (across donations)
    */
   getDonorCount() {
     const unique = new Set(this._data.donations.map(d => d.userId));
@@ -213,7 +376,7 @@ class Fundraiser extends EventEmitter {
   }
 
   /**
-   * Get progress as a percentage (0-100, can exceed 100)
+   * Get dollar goal progress as a percentage (0-100, can exceed 100)
    */
   getProgress() {
     const goal = this._data.config.goalAmount;
@@ -222,7 +385,7 @@ class Fundraiser extends EventEmitter {
   }
 
   /**
-   * Get a full status summary
+   * Get a full status summary (includes both goals)
    */
   getStatus() {
     const config = this.config;
@@ -239,6 +402,11 @@ class Fundraiser extends EventEmitter {
       pendingCount: this._data.pendingDonations.length,
       paypalLink: config.paypalLink,
       cashappTag: config.cashappTag,
+      patreonLink: config.patreonLink,
+      patreonPledgeGoal: config.patreonPledgeGoal,
+      patreonPledgeCount: this.getPatreonPledgeCount(),
+      patreonProgress: this.getPatreonProgress(),
+      pendingPatreonCount: this._data.pendingPatreonPledges.length,
       announcementChannelId: config.announcementChannelId,
     };
   }
@@ -251,11 +419,20 @@ class Fundraiser extends EventEmitter {
   }
 
   /**
-   * Reset all donations (admin action)
+   * Get recent Patreon pledges (last N)
+   */
+  getRecentPatreonPledges(count = 5) {
+    return this._data.patreonPledges.slice(-count).reverse();
+  }
+
+  /**
+   * Reset all donations and pledges (admin action)
    */
   resetDonations() {
     this._data.donations = [];
     this._data.pendingDonations = [];
+    this._data.patreonPledges = [];
+    this._data.pendingPatreonPledges = [];
     this._save();
   }
 

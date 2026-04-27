@@ -40,10 +40,15 @@ const {
   createDonateEmbed,
   createFundraiserProgressEmbed,
   createDonationAnnouncementEmbed,
+  createPatreonPledgeAnnouncementEmbed,
   createDonationReportedEmbed,
+  createPatreonPledgeReportedEmbed,
   createDonationConfirmedEmbed,
+  createPatreonPledgeConfirmedEmbed,
   createDonationDeniedEmbed,
+  createPatreonPledgeDeniedEmbed,
   createPendingDonationsEmbed,
+  createPendingPatreonPledgesEmbed,
 } = require('./fundraiser/fundraiserEmbeds');
 
 // Create Discord client
@@ -175,6 +180,17 @@ async function handleSlashCommand(interaction) {
       await handlePendingCommand(interaction);
       break;
 
+    // Patreon commands
+    case 'patron':
+      await handlePatronCommand(interaction);
+      break;
+    case 'confirmpatron':
+      await handleConfirmPatronCommand(interaction);
+      break;
+    case 'denypatron':
+      await handleDenyPatronCommand(interaction);
+      break;
+
     default:
       await interaction.reply({ content: 'Unknown command!', flags: MessageFlags.Ephemeral });
   }
@@ -291,6 +307,8 @@ async function handleFundraiserCommand(interaction) {
       latestDonor: latest ? latest.username : null,
       latestAmount: latest ? latest.amount : null,
       isAnonymous: latest ? latest.anonymous : false,
+      patreonPledgeGoal: status.patreonPledgeGoal || 0,
+      patreonPledgeCount: status.patreonPledgeCount || 0,
       filename: `therm_progress_${Date.now()}.png`,
     });
 
@@ -399,8 +417,101 @@ async function handleDenyCommand(interaction) {
 // ============================================================
 async function handlePendingCommand(interaction) {
   const pendingDonations = fundraiser.getPendingDonations();
+  const pendingPledges = fundraiser.getPendingPatreonPledges();
   const config = fundraiser.config;
-  const embed = createPendingDonationsEmbed(pendingDonations, config.currencySymbol);
+
+  const embeds = [];
+  embeds.push(createPendingDonationsEmbed(pendingDonations, config.currencySymbol));
+
+  if (config.patreonPledgeGoal > 0 || pendingPledges.length > 0) {
+    embeds.push(createPendingPatreonPledgesEmbed(pendingPledges, config.currencySymbol));
+  }
+
+  await interaction.reply({ embeds, flags: MessageFlags.Ephemeral });
+}
+
+// ============================================================
+// /patron — Report a Patreon signup
+// ============================================================
+async function handlePatronCommand(interaction) {
+  if (!fundraiser.isEnabled) {
+    return interaction.reply({
+      content: '❌ No fundraiser is currently active.',
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const config = fundraiser.config;
+  if (!config.patreonLink && config.patreonPledgeGoal <= 0) {
+    return interaction.reply({
+      content: '❌ Patreon support is not currently configured for this fundraiser.',
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const pledgeAmount = interaction.options.getNumber('pledge');
+  const additionalDonation = interaction.options.getNumber('extra') ?? 0;
+  const anonymous = interaction.options.getBoolean('anonymous') ?? false;
+
+  if (pledgeAmount <= 0) {
+    return interaction.reply({
+      content: '❌ Please enter a valid pledge amount greater than $0.',
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const pending = fundraiser.addPendingPatreonPledge({
+    userId: interaction.user.id,
+    username: interaction.user.displayName || interaction.user.username,
+    pledgeAmountCents: Math.round(pledgeAmount * 100),
+    additionalDonation,
+    anonymous,
+  });
+
+  const embed = createPatreonPledgeReportedEmbed(pending, config.currencySymbol);
+  await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+}
+
+// ============================================================
+// /confirmpatron — Admin confirms a pending Patreon pledge
+// ============================================================
+async function handleConfirmPatronCommand(interaction) {
+  const pledgeId = interaction.options.getString('id');
+  const adminUsername = interaction.user.displayName || interaction.user.username;
+
+  const pledge = fundraiser.approvePatreonPledge(pledgeId, adminUsername);
+
+  if (!pledge) {
+    return interaction.reply({
+      content: `❌ No pending Patreon pledge found with ID \`${pledgeId}\`. Use \`/pending\` to see all pending items.`,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const config = fundraiser.config;
+  const embed = createPatreonPledgeConfirmedEmbed(pledge, config.currencySymbol);
+  await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+
+  // The 'patreonPledge' event on the fundraiser will handle the announcement
+}
+
+// ============================================================
+// /denypatron — Admin denies a pending Patreon pledge
+// ============================================================
+async function handleDenyPatronCommand(interaction) {
+  const pledgeId = interaction.options.getString('id');
+
+  const denied = fundraiser.denyPatreonPledge(pledgeId);
+
+  if (!denied) {
+    return interaction.reply({
+      content: `❌ No pending Patreon pledge found with ID \`${pledgeId}\`. Use \`/pending\` to see all pending items.`,
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  const config = fundraiser.config;
+  const embed = createPatreonPledgeDeniedEmbed(denied, config.currencySymbol);
   await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 }
 
@@ -606,6 +717,8 @@ function setupFundraiserEvents() {
           latestDonor: donation.username,
           latestAmount: donation.amount,
           isAnonymous: donation.anonymous,
+          patreonPledgeGoal: status.patreonPledgeGoal || 0,
+          patreonPledgeCount: status.patreonPledgeCount || 0,
           filename: `therm_announce_${Date.now()}.png`,
         });
 
@@ -632,6 +745,68 @@ function setupFundraiserEvents() {
 
     } catch (error) {
       console.error('Error in fundraiser donation handler:', error.message);
+    }
+  });
+
+  // Patreon pledge event — announce new patrons
+  fundraiser.on('patreonPledge', async (pledge) => {
+    try {
+      const config = fundraiser.config;
+      const channelId = config.announcementChannelId;
+      if (!channelId) {
+        console.log('Fundraiser: No announcement channel configured, skipping Patreon announcement.');
+        return;
+      }
+
+      const channel = await getChannel(channelId);
+      if (!channel) {
+        console.error(`Fundraiser: Could not fetch announcement channel ${channelId}`);
+        return;
+      }
+
+      const status = fundraiser.getStatus();
+      const embed = createPatreonPledgeAnnouncementEmbed(pledge, status);
+
+      // Generate thermometer graphic with Patreon announcement
+      try {
+        const thermPath = await generateThermometer({
+          title: status.goalLabel,
+          goalAmount: status.goalAmount,
+          totalRaised: status.totalRaised,
+          currencySymbol: status.currencySymbol,
+          donorCount: status.donorCount,
+          donationCount: status.donationCount,
+          patreonPledgeGoal: status.patreonPledgeGoal || 0,
+          patreonPledgeCount: status.patreonPledgeCount || 0,
+          latestPatron: pledge.username,
+          latestAmount: pledge.additionalDonation > 0 ? pledge.additionalDonation : null,
+          isAnonymous: pledge.anonymous,
+          isPatreonAnnouncement: true,
+          filename: `therm_patron_${Date.now()}.png`,
+        });
+
+        if (thermPath) {
+          const attachment = new AttachmentBuilder(thermPath, { name: 'thermometer.png' });
+          embed.setImage('attachment://thermometer.png');
+          await channel.send({ embeds: [embed], files: [attachment] });
+
+          setTimeout(() => {
+            try {
+              const fs = require('fs');
+              if (fs.existsSync(thermPath)) fs.unlinkSync(thermPath);
+            } catch (e) { /* ignore */ }
+          }, 30000);
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to generate thermometer for Patreon announcement:', err.message);
+      }
+
+      // Fallback: send without thermometer
+      await channel.send({ embeds: [embed] });
+
+    } catch (error) {
+      console.error('Error in fundraiser Patreon pledge handler:', error.message);
     }
   });
 

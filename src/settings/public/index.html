@@ -1313,9 +1313,11 @@ pnpm start</div>
       const { config, status } = fundraiserData;
       const progress = Math.min(status.progress, 100);
 
-      // Load donations and pending
+      // Load donations, pending, and Patreon data
       let donations = [];
       let pending = [];
+      let patreonPledges = [];
+      let pendingPatreon = [];
       try {
         const dRes = await fetch('/api/fundraiser/donations');
         const dData = await dRes.json();
@@ -1324,6 +1326,14 @@ pnpm start</div>
         const pRes = await fetch('/api/fundraiser/pending');
         const pData = await pRes.json();
         pending = pData.pending || [];
+
+        const ptRes = await fetch('/api/fundraiser/patreon');
+        const ptData = await ptRes.json();
+        patreonPledges = ptData.pledges || [];
+
+        const ptpRes = await fetch('/api/fundraiser/patreon/pending');
+        const ptpData = await ptpRes.json();
+        pendingPatreon = ptpData.pending || [];
       } catch (e) { /* ignore */ }
 
       const recentDonations = donations.slice(-10).reverse();
@@ -1331,7 +1341,8 @@ pnpm start</div>
       const donationRows = recentDonations.map(d => {
         const name = d.anonymous ? '<em>Anonymous</em>' : d.username;
         const date = new Date(d.timestamp).toLocaleDateString();
-        const method = d.method === 'paypal' ? '💙 PayPal' : '💚 CashApp';
+        const methodMap = { paypal: '💙 PayPal', cashapp: '💚 CashApp', patreon: '🧡 Patreon' };
+        const method = methodMap[d.method] || d.method;
         return `<tr>
           <td>${name}</td>
           <td><strong>${config.currencySymbol}${d.amount.toFixed(2)}</strong></td>
@@ -1339,6 +1350,37 @@ pnpm start</div>
           <td>${date}</td>
         </tr>`;
       }).join('');
+
+      const pendingPatreonRows = pendingPatreon.map(p => {
+        const name = p.anonymous ? '<em>Anonymous</em>' : p.username;
+        const date = new Date(p.timestamp).toLocaleDateString();
+        const extra = p.additionalDonation > 0 ? ` + ${config.currencySymbol}${p.additionalDonation.toFixed(2)} extra` : '';
+        return `<tr>
+          <td>${name}</td>
+          <td><strong>${config.currencySymbol}${p.pledgeAmountDollars.toFixed(2)}/mo</strong>${extra}</td>
+          <td style="font-size: 0.75rem; color: var(--text-muted);">${p.id}</td>
+          <td>${date}</td>
+          <td>
+            <button class="btn btn-approve" onclick="approvePatreonPledge('${p.id}')">Approve</button>
+            <button class="btn btn-deny" onclick="denyPatreonPledge('${p.id}')">Deny</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      const recentPatronRows = patreonPledges.slice(-10).reverse().map(p => {
+        const name = p.anonymous ? '<em>Anonymous</em>' : p.username;
+        const date = new Date(p.timestamp).toLocaleDateString();
+        const extra = p.additionalDonation > 0 ? ` + ${config.currencySymbol}${p.additionalDonation.toFixed(2)}` : '';
+        return `<tr>
+          <td>${name}</td>
+          <td><strong>${config.currencySymbol}${p.pledgeAmountDollars.toFixed(2)}/mo</strong>${extra}</td>
+          <td>${date}</td>
+        </tr>`;
+      }).join('');
+
+      const patreonPledgeGoal = config.patreonPledgeGoal || 0;
+      const patreonPledgeCount = status.patreonPledgeCount || 0;
+      const patreonProgress = patreonPledgeGoal > 0 ? Math.min((patreonPledgeCount / patreonPledgeGoal) * 100, 100) : 0;
 
       const pendingRows = pending.map(p => {
         const name = p.anonymous ? '<em>Anonymous</em>' : p.username;
@@ -1361,7 +1403,7 @@ pnpm start</div>
           <p class="subtitle">Configure and manage the fundraiser for your Discord server. Donations are tracked via PayPal (link-based) and CashApp (self-reported with admin verification).</p>
 
           <h3>Current Progress</h3>
-          <div class="fundraiser-grid" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="fundraiser-grid" style="grid-template-columns: repeat(${patreonPledgeGoal > 0 ? 6 : 4}, 1fr);">
             <div class="stat-card">
               <div class="stat-value">${config.currencySymbol}${status.totalRaised.toFixed(2)}</div>
               <div class="stat-label">Raised</div>
@@ -1378,16 +1420,35 @@ pnpm start</div>
               <div class="stat-value">${status.donationCount}</div>
               <div class="stat-label">Donations</div>
             </div>
+            ${patreonPledgeGoal > 0 ? `
+            <div class="stat-card">
+              <div class="stat-value">${patreonPledgeCount}</div>
+              <div class="stat-label">Patrons</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${patreonPledgeGoal}</div>
+              <div class="stat-label">Patron Goal</div>
+            </div>
+            ` : ''}
           </div>
 
           <div class="panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-              <span style="font-size: 0.85rem; color: var(--text-muted);">${Math.round(status.progress)}% complete</span>
+              <span style="font-size: 0.85rem; color: var(--text-muted);">💰 ${Math.round(status.progress)}% of dollar goal</span>
               <span style="font-size: 0.85rem; color: var(--text-muted);">${config.currencySymbol}${Math.max(0, config.goalAmount - status.totalRaised).toFixed(2)} to go</span>
             </div>
             <div class="progress-bar-container">
               <div class="progress-bar-fill" style="width: ${progress}%;"></div>
             </div>
+            ${patreonPledgeGoal > 0 ? `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; margin-top: 0.75rem;">
+              <span style="font-size: 0.85rem; color: var(--text-muted);">🧡 ${Math.round(patreonProgress)}% of patron goal</span>
+              <span style="font-size: 0.85rem; color: var(--text-muted);">${Math.max(0, patreonPledgeGoal - patreonPledgeCount)} more needed</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" style="width: ${patreonProgress}%; background: linear-gradient(90deg, #FF424D, #FF6B6B);"></div>
+            </div>
+            ` : ''}
           </div>
 
           <h3>Configuration</h3>
@@ -1418,7 +1479,7 @@ pnpm start</div>
               </div>
             </div>
 
-            <div class="fundraiser-grid">
+            <div class="fundraiser-grid" style="grid-template-columns: repeat(3, 1fr);">
               <div class="form-group">
                 <label>PayPal Donation Link</label>
                 <input type="url" class="form-input" id="fr-paypal" value="${escapeHtml(config.paypalLink)}" placeholder="https://paypal.me/...">
@@ -1426,6 +1487,18 @@ pnpm start</div>
               <div class="form-group">
                 <label>CashApp Tag</label>
                 <input type="text" class="form-input" id="fr-cashapp" value="${escapeHtml(config.cashappTag)}" placeholder="$YourCashTag">
+              </div>
+              <div class="form-group">
+                <label>Patreon Page Link</label>
+                <input type="url" class="form-input" id="fr-patreon" value="${escapeHtml(config.patreonLink || '')}" placeholder="https://www.patreon.com/yourpage">
+              </div>
+            </div>
+
+            <div class="fundraiser-grid">
+              <div class="form-group">
+                <label>Patreon Pledge Goal (# of patrons)</label>
+                <input type="number" class="form-input" id="fr-patreon-goal" value="${config.patreonPledgeGoal || 0}" min="0" step="1">
+                <div class="form-hint">Set to 0 to disable the patron count goal. Patreon pledges will still be tracked.</div>
               </div>
             </div>
 
@@ -1437,13 +1510,42 @@ pnpm start</div>
           ${pending.length > 0 ? `
           <h3>Pending Donations (${pending.length})</h3>
           <div class="panel panel-warning">
-            <p style="margin-bottom: 1rem;">These CashApp donations have been self-reported and need admin verification.</p>
+            <p style="margin-bottom: 1rem;">These donations have been self-reported and need admin verification.</p>
             <div class="donation-list">
               <table class="styled-table">
                 <thead>
                   <tr><th>Donor</th><th>Amount</th><th>ID</th><th>Date</th><th>Actions</th></tr>
                 </thead>
                 <tbody>${pendingRows}</tbody>
+              </table>
+            </div>
+          </div>
+          ` : ''}
+
+          ${pendingPatreon.length > 0 ? `
+          <h3>Pending Patreon Pledges (${pendingPatreon.length})</h3>
+          <div class="panel" style="border-color: #FF424D;">
+            <p style="margin-bottom: 1rem;">These Patreon pledges have been self-reported and need admin verification.</p>
+            <div class="donation-list">
+              <table class="styled-table">
+                <thead>
+                  <tr><th>Patron</th><th>Pledge</th><th>ID</th><th>Date</th><th>Actions</th></tr>
+                </thead>
+                <tbody>${pendingPatreonRows}</tbody>
+              </table>
+            </div>
+          </div>
+          ` : ''}
+
+          ${patreonPledges.length > 0 ? `
+          <h3>Recent Patreon Patrons</h3>
+          <div class="panel">
+            <div class="donation-list">
+              <table class="styled-table">
+                <thead>
+                  <tr><th>Patron</th><th>Pledge</th><th>Date</th></tr>
+                </thead>
+                <tbody>${recentPatronRows}</tbody>
               </table>
             </div>
           </div>
@@ -1476,15 +1578,19 @@ pnpm start</div>
           <h3>How It Works</h3>
           <div class="panel panel-info">
             <h4>PayPal Donations</h4>
-            <p>When users run <span class="code-inline">/donate</span>, they see a button linking to your PayPal donation page. PayPal donations are link-based — the bot does not track them automatically. You can manually add PayPal donations via the CashApp flow if desired.</p>
+            <p>When users run <span class="code-inline">/donate</span>, they see a button linking to your PayPal donation page. If you configure PayPal webhooks (via .env), donations are tracked automatically. Otherwise, they are link-only.</p>
           </div>
           <div class="panel panel-info">
             <h4>CashApp Donations</h4>
-            <p>Users send money via CashApp, then use <span class="code-inline">/donated &lt;amount&gt;</span> to self-report. The donation enters a pending queue. Admins use <span class="code-inline">/confirm &lt;id&gt;</span> or <span class="code-inline">/deny &lt;id&gt;</span> (or the buttons above) to verify. Once confirmed, the bot announces the donation with a thermometer graphic in the announcement channel.</p>
+            <p>Users send money via CashApp, then use <span class="code-inline">/donated &lt;amount&gt;</span> to self-report. The donation enters a pending queue. Admins use <span class="code-inline">/confirm &lt;id&gt;</span> or <span class="code-inline">/deny &lt;id&gt;</span> (or the buttons above) to verify. Once confirmed, the bot announces the donation with a thermometer graphic.</p>
+          </div>
+          <div class="panel panel-info">
+            <h4>Patreon Pledges</h4>
+            <p>Users sign up on Patreon, then use <span class="code-inline">/patron &lt;pledge&gt; [extra]</span> to self-report their pledge level and any additional donation. Admins verify with <span class="code-inline">/confirmpatron &lt;id&gt;</span> or <span class="code-inline">/denypatron &lt;id&gt;</span>. Pledges count toward the patron goal, and any additional donation counts toward the dollar goal. If Patreon webhooks are configured (via .env), new pledges are tracked automatically.</p>
           </div>
           <div class="panel panel-info">
             <h4>Anonymous Donations</h4>
-            <p>Users can add <span class="code-inline">anonymous:true</span> to the <span class="code-inline">/donated</span> command to hide their name from the announcement. The admin can still see who donated in the pending queue and on this page.</p>
+            <p>Users can add <span class="code-inline">anonymous:true</span> to <span class="code-inline">/donated</span> or <span class="code-inline">/patron</span> to hide their name from the announcement. Admins can still see who donated in the pending queue and on this page.</p>
           </div>
         </div>
       `;
@@ -1503,6 +1609,8 @@ pnpm start</div>
       const announcementChannelId = document.getElementById('fr-channel-id').value.trim();
       const paypalLink = document.getElementById('fr-paypal').value.trim();
       const cashappTag = document.getElementById('fr-cashapp').value.trim();
+      const patreonLink = document.getElementById('fr-patreon').value.trim();
+      const patreonPledgeGoal = parseInt(document.getElementById('fr-patreon-goal').value) || 0;
 
       if (!goalLabel) {
         showToast('Goal label is required', 'error');
@@ -1518,7 +1626,7 @@ pnpm start</div>
         const res = await fetch('/api/fundraiser/config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enabled, goalLabel, goalAmount, announcementChannelId, paypalLink, cashappTag }),
+          body: JSON.stringify({ enabled, goalLabel, goalAmount, announcementChannelId, paypalLink, cashappTag, patreonLink, patreonPledgeGoal }),
         });
         const data = await res.json();
         if (data.success) {
@@ -1560,6 +1668,43 @@ pnpm start</div>
         const data = await res.json();
         if (data.success) {
           showToast('Donation denied', 'success');
+          await renderFundraiserPage();
+        } else {
+          showToast(data.error || 'Denial failed', 'error');
+        }
+      } catch (e) {
+        showToast('Denial failed', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function approvePatreonPledge(id) {
+      showLoading(true);
+      try {
+        const res = await fetch(`/api/fundraiser/patreon/pending/${id}/approve`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Patreon pledge approved!', 'success');
+          await renderFundraiserPage();
+        } else {
+          showToast(data.error || 'Approval failed', 'error');
+        }
+      } catch (e) {
+        showToast('Approval failed', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function denyPatreonPledge(id) {
+      if (!confirm('Deny this pending Patreon pledge?')) return;
+      showLoading(true);
+      try {
+        const res = await fetch(`/api/fundraiser/patreon/pending/${id}/deny`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Patreon pledge denied', 'success');
           await renderFundraiserPage();
         } else {
           showToast(data.error || 'Denial failed', 'error');

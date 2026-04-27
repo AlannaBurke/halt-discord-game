@@ -42,8 +42,32 @@ const commands = [
     ),
 
   new SlashCommandBuilder()
+    .setName('patron')
+    .setDescription('Report a new Patreon signup for admin verification')
+    .addNumberOption(option =>
+      option
+        .setName('pledge')
+        .setDescription('Your monthly pledge amount in dollars (e.g., 5.00)')
+        .setRequired(true)
+        .setMinValue(1)
+    )
+    .addNumberOption(option =>
+      option
+        .setName('extra')
+        .setDescription('Additional one-time donation amount (optional)')
+        .setRequired(false)
+        .setMinValue(0.01)
+    )
+    .addBooleanOption(option =>
+      option
+        .setName('anonymous')
+        .setDescription('Hide your name from the announcement? (default: false)')
+        .setRequired(false)
+    ),
+
+  new SlashCommandBuilder()
     .setName('confirm')
-    .setDescription('Confirm a pending CashApp donation (admin only)')
+    .setDescription('Confirm a pending donation (admin only)')
     .addStringOption(option =>
       option
         .setName('id')
@@ -54,7 +78,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName('deny')
-    .setDescription('Deny a pending CashApp donation (admin only)')
+    .setDescription('Deny a pending donation (admin only)')
     .addStringOption(option =>
       option
         .setName('id')
@@ -64,8 +88,30 @@ const commands = [
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   new SlashCommandBuilder()
+    .setName('confirmpatron')
+    .setDescription('Confirm a pending Patreon pledge (admin only)')
+    .addStringOption(option =>
+      option
+        .setName('id')
+        .setDescription('The Patreon pledge ID to confirm')
+        .setRequired(true)
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+  new SlashCommandBuilder()
+    .setName('denypatron')
+    .setDescription('Deny a pending Patreon pledge (admin only)')
+    .addStringOption(option =>
+      option
+        .setName('id')
+        .setDescription('The Patreon pledge ID to deny')
+        .setRequired(true)
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+  new SlashCommandBuilder()
     .setName('pending')
-    .setDescription('View all pending CashApp donations (admin only)')
+    .setDescription('View all pending donations and Patreon pledges (admin only)')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
 ].map(cmd => cmd.toJSON());

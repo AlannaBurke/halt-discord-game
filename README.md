@@ -43,10 +43,11 @@ Players join a lobby, then draft adorable animal cards over **3 rounds** of **7 
 
 ## 2. Fundraiser System (Optional)
 
-HALT Bot includes a built-in fundraiser system that lets your community donate to a cause and track progress with a visual thermometer graphic. The fundraiser supports two donation methods:
+HALT Bot includes a built-in fundraiser system that lets your community donate to a cause and track progress with a visual thermometer graphic. The fundraiser supports three donation methods:
 
 - **PayPal** — Users click a link to donate directly via `/donate`. If PayPal webhooks are configured, donations are **automatically detected and recorded** when the payment completes.
 - **CashApp** — Users send money via CashApp, then self-report with `/donated <amount>`. Admins verify pending donations with `/confirm` or `/deny`.
+- **Patreon** — Users sign up on Patreon, then self-report their pledge with `/patron <pledge> [extra]`. Admins verify with `/confirmpatron`. If Patreon webhooks are configured, new pledges are tracked automatically. The fundraiser tracks both a **dollar goal** and a **Patreon patron count goal**.
 
 When a donation is recorded (automatically via PayPal webhook or manually confirmed by an admin), the bot posts a celebration announcement with a thermometer progress graphic in the configured announcement channel.
 
@@ -74,9 +75,12 @@ For complete documentation on the fundraiser system, commands, and dashboard, se
 | `/donate` | Fundraiser | Show donation options for the active fundraiser |
 | `/fundraiser` | Fundraiser | Check the current fundraiser progress with thermometer graphic |
 | `/donated <amount>` | Fundraiser | Report a CashApp donation for admin verification |
+| `/patron <pledge> [extra]` | Fundraiser | Report a new Patreon signup for admin verification |
 | `/confirm <id>` | Fundraiser | Admin: Confirm a pending CashApp donation |
 | `/deny <id>` | Fundraiser | Admin: Deny a pending CashApp donation |
-| `/pending` | Fundraiser | Admin: View all pending CashApp donations |
+| `/confirmpatron <id>` | Fundraiser | Admin: Confirm a pending Patreon pledge |
+| `/denypatron <id>` | Fundraiser | Admin: Deny a pending Patreon pledge |
+| `/pending` | Fundraiser | Admin: View all pending donations and pledges |
 
 ---
 
@@ -192,6 +196,12 @@ FUNDRAISER_PAYPAL_LINK=https://www.paypal.com/ncp/payment/YOUR_BUTTON_ID
 # FUNDRAISER_CASHAPP_TAG: CashApp tag for manual donations
 FUNDRAISER_CASHAPP_TAG=$YourCashTag
 
+# FUNDRAISER_PATREON_LINK: Link to your Patreon creator page
+FUNDRAISER_PATREON_LINK=https://www.patreon.com/YourPage
+
+# FUNDRAISER_PATREON_PLEDGE_GOAL: Target number of patrons
+FUNDRAISER_PATREON_PLEDGE_GOAL=50
+
 # FUNDRAISER_ANNOUNCEMENT_CHANNEL_ID: Right-click channel > Copy Channel ID
 # Where confirmed donation celebrations are posted
 FUNDRAISER_ANNOUNCEMENT_CHANNEL_ID=your_channel_id
@@ -227,7 +237,9 @@ pnpm start
 
 ---
 
-## 5. PayPal Webhook Setup (Optional)
+## 5. Webhook Setup (Optional)
+
+### PayPal Webhooks
 
 To automatically track PayPal donations (instead of only providing a donation link), follow these steps:
 
@@ -259,6 +271,20 @@ PAYPAL_MODE=live
 ```
 
 Restart the bot. You should see `💙 PayPal webhook endpoint active at /webhooks/paypal` in the console. When someone completes a PayPal payment, the bot will automatically record it and post an announcement.
+
+### Patreon Webhooks
+
+To automatically track new Patreon pledges (instead of relying on `/patron` self-reporting):
+
+1. Go to [Patreon Webhooks Registration](https://www.patreon.com/portal/registration/register-webhooks)
+2. Click **Add Webhook**
+3. Set the URL to: `https://yourdomain.com/webhooks/patreon` (must be HTTPS)
+4. Subscribe to the event: **members:pledge:create**
+5. Save, then copy the Webhook Secret and add it to your `.env`:
+
+```env
+PATREON_WEBHOOK_SECRET=your_secret_here
+```
 
 ---
 
